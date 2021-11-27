@@ -1,0 +1,6 @@
+dash==2.0.0
+dash_bootstrap_components==0.13.0
+dpkt==1.9.2
+pandas==0.23.3+dfsg
+requests==2.21.0
+visdcc==0.0.40
