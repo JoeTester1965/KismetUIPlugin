@@ -3,3 +3,7 @@
 ################################################################################
 
 /packets.pcapng
+/packets.pcap
+/edge_df.csv
+/.vs/KismetUIPlugin/v16
+/.vs

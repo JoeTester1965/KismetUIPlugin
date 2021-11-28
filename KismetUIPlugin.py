@@ -44,11 +44,11 @@ tmp_csvfile = "edge_df.csv"
 ui_variables = {   
                     'rewind_timeframe' : 300,
                     'mac_privacy_filter' : False,
-                    'mac_multicast_filter' : True,
-                    'gratuitous_arp_filter' : True,
+                    'mac_multicast_filter' : False,
+                    'gratuitous_arp_filter' : False,
                     'kismet_credentials' : 'user:password',
                     'kismet_uri' : '127.0.0.1:2501',
-                    'packet_limit' : 5000
+                    'packet_limit' : 10000
                }
 
 def test_if_mac_filtered_in_edge(mac_list):
@@ -107,6 +107,7 @@ def get_cached_mac_details(mac):
     try:
         response = requests.get(kismet_api_uri)
     except:
+        logging.warn("No API response received")
         pass
 
     if response.content:
@@ -152,9 +153,11 @@ def get_cached_mac_details(mac):
 def pretty_format_hex(a):
     return ':'.join([a[i:i + 2] for i in range(0, len(a), 2)])
 
-def create_edge_df(time_window_seconds):
+def create_edge_df(time_window_seconds, graph_type):
 
     global ui_variables, channel_list, channel_options
+
+    mac_details_cache.clear()
     
     latest_timestamp =  time.time()
 
@@ -167,7 +170,7 @@ def create_edge_df(time_window_seconds):
     try:
         response = requests.get(kismet_login_uri)
     except:
-        logging.info("OOPS - No response received, check Kismet server and your API URI and credentials")
+        logging.warn("No response received, check Kismet server and your API URI and credentials")
         pass
     
     kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/logging/kismetdb/pcap/packets.pcapng?limit=" + str(ui_variables['packet_limit']) + "&timestamp_start=" + str(working_timestamp) + "&timestamp_end=" + str(latest_timestamp)
@@ -196,7 +199,7 @@ def create_edge_df(time_window_seconds):
         f.close()
         logging.info("Received response, now processing packets ... ")
     except:
-        logging.info("OOPS - No response received, check Kismet server and your API URI and credentials")
+        logging.warn("No response received, check Kismet server and your API URI and credentials")
         pass
 
     if os.name == "nt":
@@ -214,7 +217,7 @@ def create_edge_df(time_window_seconds):
         try:
             pcap = dpkt.pcap.Reader(f)
         except:
-            logging.info("Cannot process packets")
+            logging.warn("Cannot process packets")
             return
         for timestamp, buf in pcap:
     
@@ -223,19 +226,22 @@ def create_edge_df(time_window_seconds):
             except:
                    pass
             if type == 0x08:
-                sourcemac= pretty_format_hex(binascii.hexlify(buf[34:40]).decode('utf-8'))
-                destmac = pretty_format_hex(binascii.hexlify(buf[22:28]).decode('utf-8'))
-                transmissionmac = pretty_format_hex(binascii.hexlify(buf[28:34]).decode('utf-8'))
+                ss_mac = pretty_format_hex(binascii.hexlify(buf[22:28]).decode('utf-8'))
+                ap_mac = pretty_format_hex(binascii.hexlify(buf[28:34]).decode('utf-8'))
+                ds_mac = pretty_format_hex(binascii.hexlify(buf[34:40]).decode('utf-8'))
                 frequency = int.from_bytes(buf[10:12], "little")
                 frequency_list_set.add(frequency)
                 packet_len = len(buf)
                 signal = int((128 - (buf[14] & 0b01111111)) * -1)
-                data_tuple_endpoint=[sourcemac, destmac, frequency, packet_len, signal]
-                data.append(data_tuple_endpoint)
-                data_tuple_endpoint=[sourcemac, transmissionmac, frequency, packet_len, signal]
-                data.append(data_tuple_endpoint)
-                data_tuple_transmission=[transmissionmac, destmac, frequency, packet_len, signal]
-                data.append(data_tuple_transmission)     
+                
+                if (graph_type == 'ssds'):
+                    data_tuple_endpoint=[ss_mac, ds_mac, frequency, packet_len, signal]
+                if (graph_type == 'ssap'):
+                    data_tuple_endpoint=[ss_mac, ap_mac, frequency, packet_len, signal]
+                if (graph_type == 'apds'):
+                    data_tuple_endpoint=[ap_mac, ds_mac, frequency, packet_len, signal]
+
+                data.append(data_tuple_endpoint)  
 
     graph_dict = collections.defaultdict(dict)
 
@@ -278,8 +284,7 @@ def create_edge_df(time_window_seconds):
             total_packets = graph_dict[channel][key][2]
             total_bytes = graph_dict[channel][key][3]
             average_signal = graph_dict[channel][key][4]
-            if not ((from_node_type == "Wi-Fi AP") and (to_node_type == "Wi-Fi AP")):
-                edge_writer.writerow([from_name,to_name,channel,total_packets,total_bytes,average_signal,from_node_type,to_node_type])
+            edge_writer.writerow([from_name,to_name,channel,total_packets,total_bytes,average_signal,from_node_type,to_node_type])
            
     edge_df_handle.flush()
 
@@ -361,6 +366,11 @@ except:
 channel_options=[]
 channel_options.append({'label': 'all', 'value': 'all'})
 
+graph_type_options=[]
+graph_type_options.append({'label': 'AP -> Dest STA', 'value': 'apds'})
+graph_type_options.append({'label': 'Source STA -> Dest STA', 'value': 'ssds'})
+graph_type_options.append({'label': 'Source STA -> AP', 'value': 'ssap'})
+
 # https://visjs.github.io/vis-network/docs/network/
 network_options = {
     'height'        : '900px',
@@ -374,6 +384,11 @@ gui = html.Tr([html.Tr("Channel (CTRL-F5 update)"),
                 html.Tr(dcc.Dropdown(id = 'channel',
                      options=channel_options,
                      value="all",
+                     clearable=False)),
+                html.Tr("Graph type"),
+                html.Tr(dcc.Dropdown(id = 'graph_type',
+                     options=graph_type_options,
+                     value="apds",
                      clearable=False)), 
                html.Tr([dcc.Checklist(id = 'mac_privacy_filter',
                      options=[
@@ -384,12 +399,12 @@ gui = html.Tr([html.Tr("Channel (CTRL-F5 update)"),
                      options=[
                             {'label': 'mac_multicast_filter', 'value': 'mac_multicast_filter'},
                         ],
-                        value=['mac_multicast_filter'])]),
+                        value=[])]),
                html.Tr([dcc.Checklist(id = 'gratuitous_arp_filter',
                      options=[
                             {'label': 'gratuitous_arp_filter', 'value': 'gratuitous_arp_filter'},
                         ],
-                        value=['gratuitous_arp_filter'])]),
+                        value=[])]),
                 html.Tr([dbc.Button( "Get Kismet data", id="get_ksimet_data", className="mr-2", n_clicks=0),html.Span(id="example-output", style={"verticalAlign": "middle",}),],),
                 html.Tr("-------------------"), 
                 html.Tr("Kismet credentials"),
@@ -426,12 +441,12 @@ app.layout = html.Div([
 #update graph for new channel and rewind_timeframe
 @app.callback(
     Output('net', 'data'),
-    [   Input('channel', 'value'), Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'),
+    [   Input('graph_type', 'value'), Input('channel', 'value'), Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'),
         Input('rewind_timeframe', 'value'),Input('get_ksimet_data', 'n_clicks'),
         Input('mac_privacy_filter', 'value'),Input('mac_multicast_filter', 'value'),Input('gratuitous_arp_filter', 'value'),
         Input('packet_limit', 'value')])
 
-def myfun(channel, kismet_credentials,kismet_uri,rewind_timeframe,n_clicks,
+def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_timeframe,n_clicks,
           mac_privacy_filter,mac_multicast_filter,gratuitous_arp_filter, packet_limit):
     
     global nodes,edges,ui_variables
@@ -462,8 +477,7 @@ def myfun(channel, kismet_credentials,kismet_uri,rewind_timeframe,n_clicks,
     ui_variables['packet_limit'] = int(packet_limit)
 
     if 'get_ksimet_data' in changed_id:
-        create_edge_df(rewind_timeframe)
-    
+        create_edge_df(rewind_timeframe, graph_type) 
         update_graph_data(channel)
     
     data = {'nodes':nodes, 'edges':edges} 
