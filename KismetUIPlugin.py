@@ -42,13 +42,15 @@ channel_list = []
 tmp_csvfile = "edge_df.csv"
 
 ui_variables = {   
-                    'rewind_timeframe' : 300,
+                    'channel' : 'all',
+                    'graph_type' : 'apds',
+                    'rewind_timeframe' : 30,
                     'mac_privacy_filter' : False,
                     'mac_multicast_filter' : False,
                     'gratuitous_arp_filter' : False,
                     'kismet_credentials' : 'user:password',
-                    'kismet_uri' : '127.0.0.1:2501',
-                    'packet_limit' : 10000
+                    'kismet_uri' : '192.168.1.50:2501',
+                    'packet_limit' : 5000,
                }
 
 def test_if_mac_filtered_in_edge(mac_list):
@@ -87,6 +89,8 @@ def ieee80211_frequency_to_channel(freq_mhz):
 
 def get_cached_mac_details(mac):
 
+    global mac_details_cache
+    
     retval_pretty_mac_name = mac
     retval_node_details = "Device type as of yet unknown"
     retval_device_type = "Unknown" 
@@ -103,6 +107,8 @@ def get_cached_mac_details(mac):
         return retval
 
     kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/devices/by-mac/" + mac + "/devices.json"
+
+    logging.info("Sending devices by mac '%s'", kismet_api_uri)
 
     try:
         response = requests.get(kismet_api_uri)
@@ -153,11 +159,98 @@ def get_cached_mac_details(mac):
 def pretty_format_hex(a):
     return ':'.join([a[i:i + 2] for i in range(0, len(a), 2)])
 
+def create_edge_df_from_db():
+
+    global ui_variables, channel_list, channel_options, mac_details_cache
+
+    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/devices/views/all/devices.json"
+
+    logging.info("Sending request '%s'", kismet_api_uri)
+
+    edge_df_handle = open(tmp_csvfile, 'w', newline='')
+    edge_writer = csv.writer(edge_df_handle)
+    edge_header = ['from_mac', 'to_mac', 'channel', 'total_packets', 'total_bytes', 'average_signal'] 
+    edge_writer.writerow(edge_header)
+
+    try:
+        response = requests.get(kismet_api_uri)
+    except:
+        logging.warn("No API response received")
+        pass
+
+    if response.content:
+        try:
+             devices_dict = json.loads(response.content)
+        except:
+            return
+
+        for device in devices_dict:
+
+            mac = device['kismet.device.base.macaddr']
+            retval_device_type = device['kismet.device.base.type']
+            manuf = device['kismet.device.base.manuf']
+            if not manuf or manuf == 'Unknown':
+                stripped_mac = mac.replace(":","")
+                u_l_bit = (int(stripped_mac[1], 16) & 2) >> 1
+                if u_l_bit:
+                    manuf = "Privacy"
+                else:
+                    manuf = ""
+            retval_pretty_mac_name = manuf + label_for_newline_in_graph + mac
+
+            type_text = "Type : " + retval_device_type
+            ap_name_text = ""
+            if retval_device_type == 'Wi-Fi AP':
+                ap_name_text = "( " + device['kismet.device.base.name'] + " , channel " + device['kismet.device.base.channel'] + " )"
+                first_time_text = "First seen : " + datetime.datetime.fromtimestamp(device['kismet.device.base.first_time']).strftime('%c')
+                last_time_text = "Last seen : " + datetime.datetime.fromtimestamp(device['kismet.device.base.last_time']).strftime('%c')
+                retval_node_details = type_text + " " + ap_name_text + " <br/> " + first_time_text + " <br/> " + last_time_text
+
+            mac_details_cache[mac]['pretty_mac_name'] = retval_pretty_mac_name
+            mac_details_cache[mac]['node_details'] = retval_node_details
+            mac_details_cache[mac]['device_type'] = retval_device_type
+            mac_details_cache[mac]['last_time'] = device['kismet.device.base.last_time']
+        
+        for device in devices_dict:
+            if device['kismet.device.base.type'] == 'Wi-Fi AP':
+                channel = device['kismet.device.base.channel']
+                channel_list.append(int(channel))
+                ap_mac = device['kismet.device.base.macaddr']
+
+                try:
+                    client_map_dict = device['dot11.device']['dot11.device.associated_client_map']
+                    for client_mac in client_map_dict:
+                        if mac_details_cache[client_mac]:
+                            if (int(time.time()) - mac_details_cache[client_mac]['last_time']) < int(ui_variables['rewind_timeframe']):
+                                edge_writer.writerow([ap_mac,client_mac,channel,0,0,0])
+                            else:
+                                pass
+                except:
+                    pass
+           
+    edge_df_handle.flush()
+    edge_df_handle.close()
+
+    channel_list = list(set(channel_list))
+    channel_list.sort()
+    
+    channel_options.clear()
+    channel_options.append({'label': 'all', 'value': 'all'})
+    for channel in channel_list:
+        channel_options.append({'label': channel, 'value': int(channel)})
+
+    logging.info("Kismet DB processed")
+    return
+
 def create_edge_df(time_window_seconds, graph_type):
 
-    global ui_variables, channel_list, channel_options
-
     mac_details_cache.clear()
+
+    if graph_type == 'db':
+        create_edge_df_from_db()
+        return
+
+    global ui_variables, channel_list, channel_options
     
     latest_timestamp =  time.time()
 
@@ -285,6 +378,7 @@ def create_edge_df(time_window_seconds, graph_type):
             edge_writer.writerow([from_mac,to_mac,channel,total_packets,total_bytes,average_signal])
            
     edge_df_handle.flush()
+    edge_df_handle.close()
 
     logging.info("Packets processed")
 
@@ -365,9 +459,10 @@ channel_options=[]
 channel_options.append({'label': 'all', 'value': 'all'})
 
 graph_type_options=[]
-graph_type_options.append({'label': 'AP -> Dest STA', 'value': 'apds'})
-graph_type_options.append({'label': 'Source STA -> Dest STA', 'value': 'ssds'})
-graph_type_options.append({'label': 'Source STA -> AP', 'value': 'ssap'})
+graph_type_options.append({'label': 'AP to STA', 'value': 'apds'})
+graph_type_options.append({'label': 'Kismet DB', 'value': 'db'})
+graph_type_options.append({'label': 'STA to STA', 'value': 'ssds'})
+graph_type_options.append({'label': 'STA to AP', 'value': 'ssap'})
 
 # https://visjs.github.io/vis-network/docs/network/
 network_options = {
@@ -375,18 +470,18 @@ network_options = {
     'width'         : '100%',
     'interaction'   : {'hover' : True},
     'edges'         : {'arrows' : { 'to' : {'enabled': True,  'scaleFactor': 0.5} }, 'scaling' : { 'min': 1, 'max': 5 }},
-    'physics'       : {'stabilization' :{'iterations': 1000}}, 
+    'physics'       : {'stabilization' :{'iterations': 2000}}, 
 }
 
 gui = html.Tr([html.Tr("Channel (CTRL-F5 update)"),
                 html.Tr(dcc.Dropdown(id = 'channel',
                      options=channel_options,
-                     value="all",
+                     value=ui_variables['channel'],
                      clearable=False)),
                 html.Tr("Graph type"),
                 html.Tr(dcc.Dropdown(id = 'graph_type',
                      options=graph_type_options,
-                     value="apds",
+                     value=ui_variables['graph_type'],
                      clearable=False)), 
                html.Tr([dcc.Checklist(id = 'mac_privacy_filter',
                      options=[
@@ -451,8 +546,15 @@ def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_timeframe,n_
     
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
 
+    if graph_type:
+         ui_variables['graph_type'] = graph_type
+
+    if channel:
+         ui_variables['channel'] = channel
+
     if kismet_credentials:
         ui_variables['kismet_credentials'] = kismet_credentials
+    
     if kismet_uri:
         ui_variables['kismet_uri'] = kismet_uri
     
