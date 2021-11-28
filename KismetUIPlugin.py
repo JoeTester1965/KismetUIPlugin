@@ -272,19 +272,17 @@ def create_edge_df(time_window_seconds, graph_type):
 
     edge_df_handle = open(tmp_csvfile, 'w', newline='')
     edge_writer = csv.writer(edge_df_handle)
-    edge_header = ['from', 'to', 'channel', 'total_packets', 'total_bytes', 'average_signal', 'from_node_type', 'to_node_type']
+    edge_header = ['from_mac', 'to_mac', 'channel', 'total_packets', 'total_bytes', 'average_signal']
     edge_writer.writerow(edge_header)
 
     for channel in graph_dict:
         for key in graph_dict[channel]:
-            from_name = graph_dict[channel][key][0]
-            to_name = graph_dict[channel][key][1]
-            from_node_type=get_cached_mac_details(from_name)['device_type'] 
-            to_node_type=get_cached_mac_details(to_name)['device_type']                     
+            from_mac = graph_dict[channel][key][0]
+            to_mac = graph_dict[channel][key][1]
             total_packets = graph_dict[channel][key][2]
             total_bytes = graph_dict[channel][key][3]
             average_signal = graph_dict[channel][key][4]
-            edge_writer.writerow([from_name,to_name,channel,total_packets,total_bytes,average_signal,from_node_type,to_node_type])
+            edge_writer.writerow([from_mac,to_mac,channel,total_packets,total_bytes,average_signal])
            
     edge_df_handle.flush()
 
@@ -303,7 +301,7 @@ def update_graph_data(channel):
     if channel != 'all':
         df = df.loc[df['channel'] == channel, :]
 
-    node_list = list(set(df['from'].unique().tolist() + df['to'].unique().tolist()))
+    node_list = list(set(df['from_mac'].unique().tolist() + df['to_mac'].unique().tolist()))
     node_translation_dict={
                                 "Wi-Fi AP":                 ['#000000',12],      #black
                                 "Wi-Fi Bridged":            ['#808080',10],      #grey
@@ -343,7 +341,7 @@ def update_graph_data(channel):
             }),
                         
     for row in df.to_dict(orient='records'):
-        source, target, packets, total_bytes, average_signal = row['from'] , row['to'], row['total_packets'], row['total_bytes'], row['average_signal']
+        source, target, packets, total_bytes, average_signal = row['from_mac'] , row['to_mac'], row['total_packets'], row['total_bytes'], row['average_signal']
         label = str(packets) + " packets <br/>" + str(total_bytes) + " bytes<br/>signal strength  " + str(average_signal) 
         edges.append({
             'id': source + "__" + target,
