@@ -34,6 +34,7 @@ You can interact with the menu as follows:
 | **Label** | **Explanation** | 
 | :-------------: | :----------: |
 | Channel | Select all or a specific channel seen, this list is updated dynamically by refreshing your browser (CTRL F5) |
+| Graph type | Choose what to graph based on combination of AP (access point), Dest STA  and Source STA. AP to Dest STA is the default |
 | mac_privacy_filter | Display devces with a changing privacy address or not |
 | mac_multicast_filter | Display multicast traffic or not |
 | gratuitous_arp_filter | Display arp broadcast traffic or not |
