@@ -1,0 +1,13 @@
+1. KismetBD graph data is wrong - all devices have AP info, also seeing APs from wrong channel!
+
+2. Channel update : javascript - Button that refreshes the page on click - Stack Overflow - refresh channel list! https://stackoverflow.com/questions/29884654/button-that-refreshes-the-page-on-click
+
+3. If AP put SSID at top of pretty name, not in details
+
+4. Any other info able to add to nodes and edges in KismetDB option?
+
+5. Ignore [Get Kismet Data] if operation already in progess, can change name pf button in the meantime?
+
+6. Add function called repopulate_mac_details_cache(), call before create_edge_df (only delete cache at top of this new function!) and remove code with api calls in get_cached_mac_details
+
+7. Implement async for packet based graphs

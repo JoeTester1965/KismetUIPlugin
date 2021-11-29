@@ -43,14 +43,13 @@ tmp_csvfile = "edge_df.csv"
 
 ui_variables = {   
                     'channel' : 'all',
-                    'graph_type' : 'apds',
-                    'rewind_timeframe' : 30,
+                    'graph_type' : 'db',
+                    'rewind_seconds' : 60,
                     'mac_privacy_filter' : False,
                     'mac_multicast_filter' : False,
                     'gratuitous_arp_filter' : False,
                     'kismet_credentials' : 'user:password',
-                    'kismet_uri' : '192.168.1.50:2501',
-                    'packet_limit' : 5000,
+                    'kismet_uri' : '127.0.0.1:2501',
                }
 
 def test_if_mac_filtered_in_edge(mac_list):
@@ -137,7 +136,6 @@ def get_cached_mac_details(mac):
                 manuf = ""
         retval_pretty_mac_name = manuf + label_for_newline_in_graph + mac
         
-        #node details
         type_text = "Type : " + retval_device_type
         ap_name_text = ""
         if retval_device_type == 'Wi-Fi AP':
@@ -221,7 +219,7 @@ def create_edge_df_from_db():
                     client_map_dict = device['dot11.device']['dot11.device.associated_client_map']
                     for client_mac in client_map_dict:
                         if mac_details_cache[client_mac]:
-                            if (int(time.time()) - mac_details_cache[client_mac]['last_time']) < int(ui_variables['rewind_timeframe']):
+                            if (int(time.time()) - mac_details_cache[client_mac]['last_time']) < int(ui_variables['rewind_seconds']):
                                 edge_writer.writerow([ap_mac,client_mac,channel,0,0,0])
                             else:
                                 pass
@@ -266,7 +264,7 @@ def create_edge_df(time_window_seconds, graph_type):
         logging.warn("No response received, check Kismet server and your API URI and credentials")
         pass
     
-    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/logging/kismetdb/pcap/packets.pcapng?limit=" + str(ui_variables['packet_limit']) + "&timestamp_start=" + str(working_timestamp) + "&timestamp_end=" + str(latest_timestamp)
+    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/logging/kismetdb/pcap/packets.pcapng?limit=5000&timestamp_start=" + str(working_timestamp) + "&timestamp_end=" + str(latest_timestamp)
 
     logging.info("Sending request '%s'", kismet_api_uri)
 
@@ -397,14 +395,14 @@ def update_graph_data(channel):
 
     node_list = list(set(df['from_mac'].unique().tolist() + df['to_mac'].unique().tolist()))
     node_translation_dict={
-                                "Wi-Fi AP":                 ['#000000',12],      #black
-                                "Wi-Fi Bridged":            ['#808080',10],      #grey
-                                "Wi-Fi Device":             ['#008000',10],      #green
-                                "Wi-Fi Device (Inferred)":  ['#808000',10],      #olive
-                                "Wi-Fi Ad-Hoc":             ['#800080',10],      #purple   
-                                "Wi-Fi WDS Device":         ['#008080',10],      #teal
-                                "Wi-Fi WDS AP":             ['#C0C0C0',12],      #silver
-                                "Unknown":                  ['#800000',10]}      #maroon
+                                "Wi-Fi AP":                 ['#000000'],      #black
+                                "Wi-Fi Bridged":            ['#808080'],      #grey
+                                "Wi-Fi Device":             ['#008000'],      #green
+                                "Wi-Fi Device (Inferred)":  ['#808000'],      #olive
+                                "Wi-Fi Ad-Hoc":             ['#800080'],      #purple   
+                                "Wi-Fi WDS Device":         ['#008080'],      #teal
+                                "Wi-Fi WDS AP":             ['#C0C0C0'],      #silver
+                                "Unknown":                  ['#800000']}      #maroon
     
     if len(node_list) == 0:
         nodes.clear()
@@ -423,7 +421,6 @@ def update_graph_data(channel):
             node_label = node_label_unfiltered.replace(label_for_newline_in_graph,"\n")
             node_title = get_cached_mac_details(node_name)['node_details'] 
             node_color = node_translation_dict[get_cached_mac_details(node_name)['device_type']][0];
-            node_size = node_translation_dict[get_cached_mac_details(node_name)['device_type']][1];
         nodes.append({
             'id': node_name, 
             'label': node_label, 
@@ -436,7 +433,10 @@ def update_graph_data(channel):
                         
     for row in df.to_dict(orient='records'):
         source, target, packets, total_bytes, average_signal = row['from_mac'] , row['to_mac'], row['total_packets'], row['total_bytes'], row['average_signal']
-        label = str(packets) + " packets <br/>" + str(total_bytes) + " bytes<br/>signal strength  " + str(average_signal) 
+        if packets > 0:
+            label = str(packets) + " packets <br/>" + str(total_bytes) + " bytes<br/>signal strength  " + str(average_signal) 
+        else:
+            label = ""
         edges.append({
             'id': source + "__" + target,
             'from': source,
@@ -459,21 +459,18 @@ channel_options=[]
 channel_options.append({'label': 'all', 'value': 'all'})
 
 graph_type_options=[]
-graph_type_options.append({'label': 'AP to STA', 'value': 'apds'})
 graph_type_options.append({'label': 'Kismet DB', 'value': 'db'})
-graph_type_options.append({'label': 'STA to STA', 'value': 'ssds'})
-graph_type_options.append({'label': 'STA to AP', 'value': 'ssap'})
 
 # https://visjs.github.io/vis-network/docs/network/
 network_options = {
     'height'        : '900px',
     'width'         : '100%',
     'interaction'   : {'hover' : True},
-    'edges'         : {'arrows' : { 'to' : {'enabled': True,  'scaleFactor': 0.5} }, 'scaling' : { 'min': 1, 'max': 5 }},
-    'physics'       : {'stabilization' :{'iterations': 2000}}, 
+    'edges'         : {'scaling' : { 'min': 0.5, 'max': 5.0 }},
+    'physics'       : {'minVelocity' : 0.75, 'stabilization': {'iterations': 100}, 'manipulation': {"enabled": True}}
 }
 
-gui = html.Tr([html.Tr("Channel (CTRL-F5 update)"),
+gui = html.Tr([ html.Tr("Channel"),
                 html.Tr(dcc.Dropdown(id = 'channel',
                      options=channel_options,
                      value=ui_variables['channel'],
@@ -483,32 +480,12 @@ gui = html.Tr([html.Tr("Channel (CTRL-F5 update)"),
                      options=graph_type_options,
                      value=ui_variables['graph_type'],
                      clearable=False)), 
-               html.Tr([dcc.Checklist(id = 'mac_privacy_filter',
-                     options=[
-                            {'label': 'mac_privacy_filter', 'value': 'mac_privacy_filter'},
-                        ],
-                        value=[])]),  
-               html.Tr([dcc.Checklist(id = 'mac_multicast_filter',
-                     options=[
-                            {'label': 'mac_multicast_filter', 'value': 'mac_multicast_filter'},
-                        ],
-                        value=[])]),
-               html.Tr([dcc.Checklist(id = 'gratuitous_arp_filter',
-                     options=[
-                            {'label': 'gratuitous_arp_filter', 'value': 'gratuitous_arp_filter'},
-                        ],
-                        value=[])]),
-                html.Tr([dbc.Button( "Get Kismet data", id="get_ksimet_data", className="mr-2", n_clicks=0),html.Span(id="example-output", style={"verticalAlign": "middle",}),],),
-                html.Tr("-------------------"), 
+                html.Tr("Rewind seconds"),
+                html.Tr(dcc.Input(id = 'rewind_seconds',value = ui_variables['rewind_seconds'], style={'textAlign': 'center'})), 
                 html.Tr("Kismet credentials"),
                 html.Tr(dcc.Input(id = 'kismet_credentials', value = ui_variables['kismet_credentials'], type="password", style={'textAlign': 'center'})),
                 html.Tr("Kismet URI"),
                 html.Tr(dcc.Input(id = 'kismet_uri', value = ui_variables['kismet_uri'], style={'textAlign': 'center'})),
-                html.Tr("Rewind timeframe (s)"),
-                html.Tr(dcc.Input(id = 'rewind_timeframe',value = ui_variables['rewind_timeframe'], style={'textAlign': 'center'})),
-                html.Tr("Packet limit"),
-                html.Tr(dcc.Input(id = 'packet_limit', value = ui_variables['packet_limit'], style={'textAlign': 'center'})),
-                html.Tr("-------------------"),
                 html.Tr("Wi-Fi AP", style={'background': '#000000', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Wi-Fi Bridged", style={'background': '#808080', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Wi-Fi Device", style={'background': '#008000', 'color': '#FFFFFF', 'font-size': '10px'}),
@@ -517,6 +494,7 @@ gui = html.Tr([html.Tr("Channel (CTRL-F5 update)"),
                 html.Tr("Wi-Fi WDS Device", style={'background': '#008080', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Wi-Fi WDS AP", style={'background': '#404040', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Unknown", style={'background': '#800000', 'color': '#FFFFFF', 'font-size': '10px'}),
+                html.Tr([dbc.Button( "Get Kismet data", id="get_ksimet_data", className="mr-2", n_clicks=0),html.Span(id="example-output", style={"verticalAlign": "middle",}),],),
             ])
 
 network = visdcc.Network(id = 'net', options = network_options)
@@ -524,23 +502,15 @@ row1 = html.Tr([html.Td(gui), html.Td(network)])
 table_body = [html.Tbody([row1])]
 table = dbc.Table(table_body)
 
-app.layout = html.Div([ 
-    table,
-    #row1,
-    #visdcc.Network(     id = 'net', 
-    #                    options = network_options)
-    ], style =  {'text-align': 'center'})
+app.layout = html.Div([table], style =  {'text-align': 'center'})
 
-#update graph for new channel and rewind_timeframe
+#update graph for new channel and rewind_seconds
 @app.callback(
     Output('net', 'data'),
     [   Input('graph_type', 'value'), Input('channel', 'value'), Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'),
-        Input('rewind_timeframe', 'value'),Input('get_ksimet_data', 'n_clicks'),
-        Input('mac_privacy_filter', 'value'),Input('mac_multicast_filter', 'value'),Input('gratuitous_arp_filter', 'value'),
-        Input('packet_limit', 'value')])
+        Input('rewind_seconds', 'value'),Input('get_ksimet_data', 'n_clicks')])
 
-def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_timeframe,n_clicks,
-          mac_privacy_filter,mac_multicast_filter,gratuitous_arp_filter, packet_limit):
+def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_seconds,n_clicks):
     
     global nodes,edges,ui_variables
     
@@ -558,26 +528,10 @@ def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_timeframe,n_
     if kismet_uri:
         ui_variables['kismet_uri'] = kismet_uri
     
-    if mac_privacy_filter:
-        ui_variables['mac_privacy_filter'] = True
-    else:
-        ui_variables['mac_privacy_filter'] = False
-    
-    if mac_multicast_filter:
-        ui_variables['mac_multicast_filter'] = True
-    else:
-        ui_variables['mac_multicast_filter'] = False
-
-    if gratuitous_arp_filter:
-        ui_variables['gratuitous_arp_filter'] = True
-    else:
-        ui_variables['gratuitous_arp_filter'] = False
-    
-    ui_variables['rewind_timeframe'] = rewind_timeframe
-    ui_variables['packet_limit'] = int(packet_limit)
+    ui_variables['rewind_seconds'] = rewind_seconds
 
     if 'get_ksimet_data' in changed_id:
-        create_edge_df(rewind_timeframe, graph_type) 
+        create_edge_df(rewind_seconds, graph_type) 
         update_graph_data(channel)
     
     data = {'nodes':nodes, 'edges':edges} 
