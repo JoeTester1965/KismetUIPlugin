@@ -25,7 +25,7 @@ You can interact with the graph as follows:
 
 | **Mouse** | **Feature** |
 | :-------------: | :----------: |
-| Wheel | Resize |
+| Wheel | Zoom in and out |
 | Left button | Drag nodes |
 | Hover | Node and edge information |
 
