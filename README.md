@@ -34,7 +34,7 @@ You can interact with the menu as follows:
 | **Label** | **Explanation** | 
 | :-------------: | :----------: |
 | Channel | Select all or a specific channel seen, this list is updated dynamically by refreshing your browser (CTRL F5) |
-| Graph type | Choose what to graph. |
+| Graph type | Choose what to graph |
 | Kismet credentials | username:password e.g. pi:12345 |
 | Kismet URI | API URI e.g. 192.168.1.50:2501 |
 | Rewind timeframe (s) | How long back you will start to pull back devices seen in the Kismet database |

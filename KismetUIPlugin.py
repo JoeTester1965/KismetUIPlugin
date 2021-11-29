@@ -33,7 +33,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 nodes = []
 edges = []
 
-label_for_newline_in_graph = ":-:"
+label_to_replace_in_graph = ":-:"
 
 mac_details_cache = collections.defaultdict(dict)
 
@@ -49,7 +49,7 @@ ui_variables = {
                     'mac_multicast_filter' : False,
                     'gratuitous_arp_filter' : False,
                     'kismet_credentials' : 'user:password',
-                    'kismet_uri' : '127.0.0.1:2501',
+                    'kismet_uri' : '192.168.1.50:2501',
                }
 
 def test_if_mac_filtered_in_edge(mac_list):
@@ -90,17 +90,17 @@ def get_cached_mac_details(mac):
 
     global mac_details_cache
     
-    retval_pretty_mac_name = mac
+    retval_node_name = mac
     retval_node_details = "Device type as of yet unknown"
     retval_device_type = "Unknown" 
     retval = dict()
     
-    retval['pretty_mac_name'] = retval_pretty_mac_name    
+    retval['node_name'] = retval_node_name    
     retval['node_details'] = retval_node_details
     retval['device_type'] = retval_device_type
 
     if mac in mac_details_cache:
-        retval['pretty_mac_name'] = mac_details_cache[mac]['pretty_mac_name']
+        retval['node_name'] = mac_details_cache[mac]['node_name']
         retval['node_details'] = mac_details_cache[mac]['node_details']
         retval['device_type'] = mac_details_cache[mac]['device_type']
         return retval
@@ -134,21 +134,25 @@ def get_cached_mac_details(mac):
                 manuf = "Privacy"
             else:
                 manuf = ""
-        retval_pretty_mac_name = manuf + label_for_newline_in_graph + mac
+        retval_node_name = manuf + label_to_replace_in_graph + mac
         
         type_text = "Type : " + retval_device_type
         ap_name_text = ""
-        if retval_device_type == 'Wi-Fi AP':
-            ap_name_text = "( " + device_dict['kismet.device.base.name'] + " , channel " + device_dict['kismet.device.base.channel'] + " )"
+
         first_time_text = "First seen : " + datetime.datetime.fromtimestamp(device_dict['kismet.device.base.first_time']).strftime('%c')
         last_time_text = "Last seen : " + datetime.datetime.fromtimestamp(device_dict['kismet.device.base.last_time']).strftime('%c')
-        retval_node_details = type_text + " " + ap_name_text + " <br/> " + first_time_text + " <br/> " + last_time_text
 
-    mac_details_cache[mac]['pretty_mac_name'] = retval_pretty_mac_name
+        if retval_device_type == 'Wi-Fi AP':
+            ap_name_text = device['kismet.device.base.name'] + " channel " + device['kismet.device.base.channel']
+            retval_node_details = ap_name_text + " <br/> " + first_time_text + " <br/> " + last_time_text
+        else:
+            retval_node_details = first_time_text + " <br/> " + last_time_text
+
+    mac_details_cache[mac]['node_name'] = retval_node_name
     mac_details_cache[mac]['node_details'] = retval_node_details
     mac_details_cache[mac]['device_type'] = retval_device_type
    
-    retval['pretty_mac_name'] = retval_pretty_mac_name    
+    retval['node_name'] = retval_node_name    
     retval['node_details'] = retval_node_details
     retval['device_type'] = retval_device_type
 
@@ -157,7 +161,7 @@ def get_cached_mac_details(mac):
 def pretty_format_hex(a):
     return ':'.join([a[i:i + 2] for i in range(0, len(a), 2)])
 
-def create_edge_df_from_db():
+def create_edge_df_from_db(graphing_channel):
 
     global ui_variables, channel_list, channel_options, mac_details_cache
 
@@ -170,10 +174,21 @@ def create_edge_df_from_db():
     edge_header = ['from_mac', 'to_mac', 'channel', 'total_packets', 'total_bytes', 'average_signal'] 
     edge_writer.writerow(edge_header)
 
+    kismet_login_uri =  "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri']
+
+    logging.info("Sending login '%s'", kismet_login_uri)
+
+    try:
+        response = requests.get(kismet_login_uri)
+    except:
+        logging.warn("No response received, check Kismet server and your API URI and credentials")
+        return
+        pass
+
     try:
         response = requests.get(kismet_api_uri)
     except:
-        logging.warn("No API response received")
+        logging.warn("No API response received, check Kismet server and your API URI and credentials")
         pass
 
     if response.content:
@@ -194,20 +209,30 @@ def create_edge_df_from_db():
                     manuf = "Privacy"
                 else:
                     manuf = ""
-            retval_pretty_mac_name = manuf + label_for_newline_in_graph + mac
+            retval_node_name = manuf + label_to_replace_in_graph + mac
 
             type_text = "Type : " + retval_device_type
             ap_name_text = ""
-            if retval_device_type == 'Wi-Fi AP':
-                ap_name_text = "( " + device['kismet.device.base.name'] + " , channel " + device['kismet.device.base.channel'] + " )"
-                first_time_text = "First seen : " + datetime.datetime.fromtimestamp(device['kismet.device.base.first_time']).strftime('%c')
-                last_time_text = "Last seen : " + datetime.datetime.fromtimestamp(device['kismet.device.base.last_time']).strftime('%c')
-                retval_node_details = type_text + " " + ap_name_text + " <br/> " + first_time_text + " <br/> " + last_time_text
 
-            mac_details_cache[mac]['pretty_mac_name'] = retval_pretty_mac_name
+            first_time_text = "First seen : " + datetime.datetime.fromtimestamp(device['kismet.device.base.first_time']).strftime('%c')
+            last_time_text = "Last seen : " + datetime.datetime.fromtimestamp(device['kismet.device.base.last_time']).strftime('%c')
+
+            if retval_device_type == 'Wi-Fi AP':
+                if device['kismet.device.base.name'] == "":
+                    retval_node_name = mac
+                else:
+                    retval_node_name = device['kismet.device.base.name']
+
+                retval_node_details = "channel " +  device['kismet.device.base.channel'] + "<br/>" + device['kismet.device.base.manuf'] + "<br/>" + device['kismet.device.base.macaddr'] + "<br/>" + first_time_text + "<br/>" + last_time_text
+        
+            else:
+                retval_node_details = first_time_text + "<br/>" + last_time_text
+
+            mac_details_cache[mac]['node_name'] = retval_node_name
             mac_details_cache[mac]['node_details'] = retval_node_details
             mac_details_cache[mac]['device_type'] = retval_device_type
             mac_details_cache[mac]['last_time'] = device['kismet.device.base.last_time']
+            mac_details_cache[mac]['channel'] = device['kismet.device.base.channel']
         
         for device in devices_dict:
             if device['kismet.device.base.type'] == 'Wi-Fi AP':
@@ -220,9 +245,11 @@ def create_edge_df_from_db():
                     for client_mac in client_map_dict:
                         if mac_details_cache[client_mac]:
                             if (int(time.time()) - mac_details_cache[client_mac]['last_time']) < int(ui_variables['rewind_seconds']):
-                                edge_writer.writerow([ap_mac,client_mac,channel,0,0,0])
-                            else:
-                                pass
+                                if graphing_channel == 'all':
+                                    edge_writer.writerow([ap_mac,client_mac,channel,0,0,0])       
+                                else:
+                                    if (int(mac_details_cache[ap_mac]['channel']) == graphing_channel):
+                                        edge_writer.writerow([ap_mac,client_mac,channel,0,0,0])
                 except:
                     pass
            
@@ -240,12 +267,12 @@ def create_edge_df_from_db():
     logging.info("Kismet DB processed")
     return
 
-def create_edge_df(time_window_seconds, graph_type):
+def create_edge_df(time_window_seconds, graph_type, channel):
 
     mac_details_cache.clear()
 
     if graph_type == 'db':
-        create_edge_df_from_db()
+        create_edge_df_from_db(channel)
         return
 
     global ui_variables, channel_list, channel_options
@@ -417,8 +444,8 @@ def update_graph_data(channel):
         node_color = '#FF0000' #red
         node_size = 12
         if node_name != 'Nothing to display':
-            node_label_unfiltered = get_cached_mac_details(node_name)['pretty_mac_name']
-            node_label = node_label_unfiltered.replace(label_for_newline_in_graph,"\n")
+            node_label_unfiltered = get_cached_mac_details(node_name)['node_name']
+            node_label = node_label_unfiltered.replace(label_to_replace_in_graph,"\n")
             node_title = get_cached_mac_details(node_name)['node_details'] 
             node_color = node_translation_dict[get_cached_mac_details(node_name)['device_type']][0];
         nodes.append({
@@ -467,7 +494,7 @@ network_options = {
     'width'         : '100%',
     'interaction'   : {'hover' : True},
     'edges'         : {'scaling' : { 'min': 0.5, 'max': 5.0 }},
-    'physics'       : {'minVelocity' : 0.75, 'stabilization': {'iterations': 100}, 'manipulation': {"enabled": True}}
+    'physics'       : {'minVelocity' : 0.75, 'stabilization': {'iterations': 50}, 'manipulation': {"enabled": True}}
 }
 
 gui = html.Tr([ html.Tr("Channel"),
@@ -531,7 +558,9 @@ def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_seconds,n_cl
     ui_variables['rewind_seconds'] = rewind_seconds
 
     if 'get_ksimet_data' in changed_id:
-        create_edge_df(rewind_seconds, graph_type) 
+        nodes.clear()
+        edges.clear()
+        create_edge_df(rewind_seconds, graph_type, channel) 
         update_graph_data(channel)
     
     data = {'nodes':nodes, 'edges':edges} 
