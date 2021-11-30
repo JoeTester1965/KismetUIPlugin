@@ -422,7 +422,7 @@ network_options = {
     'width'         : '100%',
     'interaction'   : {'hover' : True},
     'edges'         : {'scaling' : { 'min': 0.5, 'max': 5.0 }},
-    'physics'       : {'minVelocity' : 0.75, 'stabilization': {'iterations': 50}, 'manipulation': {"enabled": True}}
+    'physics'       : {'solver': 'forceAtlas2Based', 'minVelocity': 0.75}
 }
 
 gui = html.Tr([ html.Tr("Channel"),
