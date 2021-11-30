@@ -1,8 +1,8 @@
 # KismetUIPlugin
 
-Pretty and useful graphs for [Kismet](https://github.com/kismetwireless/kismet) like below:
+Pretty useful graphs for [Kismet](https://github.com/kismetwireless/kismet) like below:
 
-![!](./UI2.JPG "")
+![!](./UI.JPG "")
 
 # Installing
 
@@ -14,32 +14,32 @@ By default this visualisation server runs on port 8050, change the line at the b
 
 If you are lazy and prone to leaving credentials lying around, can edit the following tokens in the [python file](./KismetUIPlugin.py):
 
-| **Label** |    **Example**   | **Explanation** | 
-| :-------------: | :----------: | :----------: | 
-| 'kismet_credentials' | 'pi:12345' | kismet api login credentials |
-| 'kismet_uri'  | '192.168.1.50:2501' |  kismet api URI location |
+**Label** | **Example**  | **Explanation**
+----- | -------- | ----------- 
+*kismet_credentials* | pi:12345 | kismet api login credentials
+*kismet_uri*  | 192.168.1.50:2501 |  kismet api URI location
 
 # User interface
 
-You can interact with the graph as follows:
+You can interact with the graph (important as information may be hiding off the screen) as follows:
 
-| **Mouse** | **Feature** |
-| :-------------: | :----------: |
-| Wheel | Zoom in and out |
-| Left button | Drag whole graph or specific nodes |
-| Hover | Node and edge information |
+**Mouse** | **Feature**
+----- | -------
+```Wheel``` | Zoom in and out
+```Left button``` | Drag whole graph or specific nodes
+```Hover``` | Node and edge information
 
 You can interact with the menu as follows:
 
-| **Label** | **Explanation** | 
-| :-------------: | :----------: |
-| Channel | Select all or a specific channel seen, this list is updated dynamically by refreshing your browser (CTRL F5) |
-| Graph type | Choose what to graph |
-| Kismet credentials | username:password e.g. pi:12345 |
-| Kismet URI | API URI e.g. 192.168.1.50:2501 |
-| Rewind timeframe (s) | How long back you will start to pull back devices seen in the Kismet database |
-| Get Kismet data | Go get some data to graph |
-| Refresh channels available | Will update channel list on browser if needed |
+**Label** | **Explanation**
+----- | -----------
+```Channel``` | Select all or a specific channel seen, this list is updated dynamically by refreshing your browser (CTRL F5)
+```Graph type``` | Choose what to graph
+```Kismet credentials``` | username:password e.g. me:12345
+```Kismet URI``` | API URI e.g. 192.168.1.50:2501
+```Rewind timeframe (s)``` | How long back you will start to look, bigger values mean bigger graphs, and too small will yield nothing
+```Refresh``` | Refresh the graph based on what you have
+```Reset``` | Reset the graph back to defaults
 
 Enjoy
 
