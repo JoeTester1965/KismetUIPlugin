@@ -86,78 +86,6 @@ def ieee80211_frequency_to_channel(freq_mhz):
         return ((freq_mhz - 2407) / 5)
     return (freq_mhz/5 - 1000) 
 
-def get_cached_mac_details(mac):
-
-    global mac_details_cache
-    
-    retval_node_name = mac
-    retval_node_details = "Device type as of yet unknown"
-    retval_device_type = "Unknown" 
-    retval = dict()
-    
-    retval['node_name'] = retval_node_name    
-    retval['node_details'] = retval_node_details
-    retval['device_type'] = retval_device_type
-
-    if mac in mac_details_cache:
-        retval['node_name'] = mac_details_cache[mac]['node_name']
-        retval['node_details'] = mac_details_cache[mac]['node_details']
-        retval['device_type'] = mac_details_cache[mac]['device_type']
-        return retval
-
-    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/devices/by-mac/" + mac + "/devices.json"
-
-    logging.info("Sending devices by mac '%s'", kismet_api_uri)
-
-    try:
-        response = requests.get(kismet_api_uri)
-    except:
-        logging.warn("No API response received")
-        pass
-
-    if response.content:
-
-        devices_dict = json.loads(response.content)
-
-        try:
-            device_dict = devices_dict[0]
-        except:
-            return retval
-
-        retval_device_type = device_dict['kismet.device.base.type']
-
-        manuf= device_dict['kismet.device.base.manuf']
-        if not manuf or manuf == 'Unknown':
-            stripped_mac = mac.replace(":","")
-            u_l_bit = (int(stripped_mac[1], 16) & 2) >> 1
-            if u_l_bit:
-                manuf = "Privacy"
-            else:
-                manuf = ""
-        retval_node_name = manuf + label_to_replace_in_graph + mac
-        
-        type_text = "Type : " + retval_device_type
-        ap_name_text = ""
-
-        first_time_text = "First seen : " + datetime.datetime.fromtimestamp(device_dict['kismet.device.base.first_time']).strftime('%c')
-        last_time_text = "Last seen : " + datetime.datetime.fromtimestamp(device_dict['kismet.device.base.last_time']).strftime('%c')
-
-        if retval_device_type == 'Wi-Fi AP':
-            ap_name_text = device['kismet.device.base.name'] + " channel " + device['kismet.device.base.channel']
-            retval_node_details = ap_name_text + " <br/> " + first_time_text + " <br/> " + last_time_text
-        else:
-            retval_node_details = first_time_text + " <br/> " + last_time_text
-
-    mac_details_cache[mac]['node_name'] = retval_node_name
-    mac_details_cache[mac]['node_details'] = retval_node_details
-    mac_details_cache[mac]['device_type'] = retval_device_type
-   
-    retval['node_name'] = retval_node_name    
-    retval['node_details'] = retval_node_details
-    retval['device_type'] = retval_device_type
-
-    return retval
-
 def pretty_format_hex(a):
     return ':'.join([a[i:i + 2] for i in range(0, len(a), 2)])
 
@@ -410,7 +338,7 @@ def create_edge_df(time_window_seconds, graph_type, channel):
     return
 
 def update_graph_data(channel):
-    global nodes,edges,channel_list
+    global nodes,edges,channel_list,mac_details_cache
 
     try:
      df = pd.read_csv(tmp_csvfile)
@@ -444,10 +372,10 @@ def update_graph_data(channel):
         node_color = '#FF0000' #red
         node_size = 12
         if node_name != 'Nothing to display':
-            node_label_unfiltered = get_cached_mac_details(node_name)['node_name']
+            node_label_unfiltered = mac_details_cache[node_name]['node_name']
             node_label = node_label_unfiltered.replace(label_to_replace_in_graph,"\n")
-            node_title = get_cached_mac_details(node_name)['node_details'] 
-            node_color = node_translation_dict[get_cached_mac_details(node_name)['device_type']][0];
+            node_title = mac_details_cache[node_name]['node_details'] 
+            node_color = node_translation_dict[mac_details_cache[node_name]['device_type']][0];
         nodes.append({
             'id': node_name, 
             'label': node_label, 
@@ -521,7 +449,8 @@ gui = html.Tr([ html.Tr("Channel"),
                 html.Tr("Wi-Fi WDS Device", style={'background': '#008080', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Wi-Fi WDS AP", style={'background': '#404040', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Unknown", style={'background': '#800000', 'color': '#FFFFFF', 'font-size': '10px'}),
-                html.Tr([dbc.Button( "Get Kismet data", id="get_ksimet_data", className="mr-2", n_clicks=0),html.Span(id="example-output", style={"verticalAlign": "middle",}),],),
+                html.Tr([dbc.Button( "Refresh", id="get_ksimet_data", className="mr-2", n_clicks=0),html.Span(id="example-output", style={"verticalAlign": "middle",}),],),
+                html.A(html.Button('Reset'),href='/'),
             ])
 
 network = visdcc.Network(id = 'net', options = network_options)
@@ -540,24 +469,35 @@ app.layout = html.Div([table], style =  {'text-align': 'center'})
 def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_seconds,n_clicks):
     
     global nodes,edges,ui_variables
+
+    refresh = False
     
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
 
     if graph_type:
          ui_variables['graph_type'] = graph_type
+         refresh = True
 
     if channel:
          ui_variables['channel'] = channel
+         refresh = True
 
     if kismet_credentials:
         ui_variables['kismet_credentials'] = kismet_credentials
+        refresh = True
     
     if kismet_uri:
         ui_variables['kismet_uri'] = kismet_uri
-    
-    ui_variables['rewind_seconds'] = rewind_seconds
+        refresh = True
+
+    if rewind_seconds:
+        ui_variables['rewind_seconds'] = rewind_seconds
+        refresh = True
 
     if 'get_ksimet_data' in changed_id:
+        refresh = True
+
+    if refresh == True:
         nodes.clear()
         edges.clear()
         create_edge_df(rewind_seconds, graph_type, channel) 
@@ -568,5 +508,6 @@ def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_seconds,n_cl
     return data
 
 if __name__ == '__main__':
+    create_edge_df(60, 'db', 'all') # set channel list 
     logging.info("Starting UI:")
     app.run_server(port=8050,host='0.0.0.0',debug=False)

@@ -1,11 +1,3 @@
-1. javascript - Button that refreshes the page on click - Stack Overflow - refresh channel list! https://stackoverflow.com/questions/29884654/button-that-refreshes-the-page-on-click
+1. Async API for packet based graphs - too large a latency for pull 
 
-2. Any other info able to add to nodes and edges in KismetDB option?
-
-3. Ignore [Get Kismet Data] if operation already in progess, can change name pf button in the meantime?
-
-4. Add function called repopulate_mac_details_cache(), call before create_edge_df (only delete cache at top of this new function!) and remove code with api calls in get_cached_mac_details
-
-5. Physics
-
-6. Kismet integration
+2. Kismet integration

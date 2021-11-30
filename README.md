@@ -39,6 +39,7 @@ You can interact with the menu as follows:
 | Kismet URI | API URI e.g. 192.168.1.50:2501 |
 | Rewind timeframe (s) | How long back you will start to pull back devices seen in the Kismet database |
 | Get Kismet data | Go get some data to graph |
+| Refresh channels available | Will update channel list on browser if needed |
 
 Enjoy
 
