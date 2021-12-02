@@ -8,8 +8,6 @@ Pretty useful graphs for [Kismet](https://github.com/kismetwireless/kismet) like
 
 Run the server [python file](./KismetUIPlugin.py) (needs 3.7 or above) with the [required dependancies](./requirements.txt) installed (pip3 install -r requirements.txt).
 
-You must also install Wireshark and have a valid PATH for editcap (linux) or editcap.exe (windows).
-
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python file](./KismetUIPlugin.py) if needed.
 
 If you are lazy and prone to leaving credentials lying around, can edit the following tokens in the [python file](./KismetUIPlugin.py):

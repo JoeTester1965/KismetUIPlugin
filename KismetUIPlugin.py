@@ -38,9 +38,9 @@ tmp_csvfile = "edge_df.csv"
 
 ui_variables = {   
                     'channel' : 'all',
-                    'graph_type' : 'db',
+                    'graph_type' : 'db-device',
                     'rewind_seconds' : 60,
-                    'kismet_credentials' : 'user:password',
+                    'kismet_credentials' : 'username:password',
                     'kismet_uri' : '192.168.1.50:2501',
                }
 
@@ -56,13 +56,9 @@ def ieee80211_frequency_to_channel(freq_mhz):
 def pretty_format_hex(a):
     return ':'.join([a[i:i + 2] for i in range(0, len(a), 2)])
 
-def create_edge_df_from_db(graphing_channel):
+def create_edge_df(graph_type, graphing_channel):
 
     global ui_variables, channel_list, channel_options, mac_details_cache
-
-    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/devices/views/all/devices.json"
-
-    logging.info("Sending request '%s'", kismet_api_uri)
 
     edge_df_handle = open(tmp_csvfile, 'w', newline='')
     edge_writer = csv.writer(edge_df_handle)
@@ -78,13 +74,15 @@ def create_edge_df_from_db(graphing_channel):
     except:
         logging.warn("No response received, check Kismet server and your API URI and credentials")
         return
-        pass
+
+    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/devices/views/all/devices.json"
+
+    logging.info("Sending request '%s'", kismet_api_uri)
 
     try:
         response = requests.get(kismet_api_uri)
     except:
         logging.warn("No API response received, check Kismet server and your API URI and credentials")
-        pass
 
     if response.content:
         try:
@@ -106,9 +104,6 @@ def create_edge_df_from_db(graphing_channel):
                     manuf = ""
             retval_node_name = manuf + label_to_replace_in_graph + mac
 
-            type_text = "Type : " + retval_device_type
-            ap_name_text = ""
-
             first_time_text = "First seen : " + datetime.datetime.fromtimestamp(device['kismet.device.base.first_time']).strftime('%c')
             last_time_text = "Last seen : " + datetime.datetime.fromtimestamp(device['kismet.device.base.last_time']).strftime('%c')
 
@@ -129,25 +124,47 @@ def create_edge_df_from_db(graphing_channel):
             mac_details_cache[mac]['last_time'] = device['kismet.device.base.last_time']
             mac_details_cache[mac]['channel'] = device['kismet.device.base.channel']
         
+        # Change this to call a function testing all device types, then only write of device type selected by UI
         for device in devices_dict:
-            if device['kismet.device.base.type'] == 'Wi-Fi AP':
-                channel = device['kismet.device.base.channel']
+            channel = device['kismet.device.base.channel']
+            try:
                 channel_list.append(int(channel))
-                ap_mac = device['kismet.device.base.macaddr']
+            except:
+                pass
 
-                try:
-                    client_map_dict = device['dot11.device']['dot11.device.associated_client_map']
-                    for client_mac in client_map_dict:
-                        if mac_details_cache[client_mac]:
-                            if (int(time.time()) - mac_details_cache[client_mac]['last_time']) < int(ui_variables['rewind_seconds']):
-                                if graphing_channel == 'all':
-                                    edge_writer.writerow([ap_mac,client_mac,channel,0,0,0])       
-                                else:
-                                    if (int(mac_details_cache[ap_mac]['channel']) == graphing_channel):
-                                        edge_writer.writerow([ap_mac,client_mac,channel,0,0,0])
-                except:
-                    pass
-           
+            device_mac = device['kismet.device.base.macaddr']
+
+            try:
+                client_map_dict = device['dot11.device']['dot11.device.client_map']
+                for client_mac in client_map_dict:
+                    valid_device = False
+                    if graph_type == 'db-device':
+                        if device['kismet.device.base.type'] in['Wi-Fi Device', 'Wi-Fi Device (Inferred)','Wi-Fi WDS Device','Wi-Fi Ad-Hoc']:   
+                            valid_device = True
+                    if graph_type == 'db-bridge':
+                        if device['kismet.device.base.type'] in['Wi-Fi Bridged']:   
+                            valid_device = True
+                    if graph_type == 'db-device-and-bridge':
+                        if device['kismet.device.base.type'] in['Wi-Fi Device', 'Wi-Fi Device (Inferred)','Wi-Fi WDS Device','Wi-Fi Ad-Hoc', 'Wi-Fi Bridged']:   
+                            valid_device = True
+                    if graph_type == 'db-ap':
+                        if device['kismet.device.base.type'] in['Wi-Fi AP', 'Wi-Fi WDS AP']:   
+                            valid_device = True
+                    if graph_type == 'db-all':
+                        valid_device = True
+
+                    if valid_device == True:
+                        if (int(time.time()) - client_map_dict[client_mac]['dot11.client.last_time']) < int(ui_variables['rewind_seconds']):
+                            if graphing_channel == 'all':
+                                edge_writer.writerow([device_mac,client_mac,channel,0,0,0])       
+                            else:
+                                if (int(mac_details_cache[device_mac]['channel']) == graphing_channel): 
+                                    edge_writer.writerow([device_mac,client_mac,channel,0,0,0])
+
+            except:
+                pass
+
+
     edge_df_handle.flush()
     edge_df_handle.close()
 
@@ -160,16 +177,6 @@ def create_edge_df_from_db(graphing_channel):
         channel_options.append({'label': channel, 'value': int(channel)})
 
     logging.info("Kismet DB processed")
-    return
-
-def create_edge_df(graph_type, channel):
-
-    mac_details_cache.clear()
-
-    if graph_type == 'db':
-        create_edge_df_from_db(channel)
-        return
-
     return
 
 def update_graph_data(channel):
@@ -249,7 +256,11 @@ channel_options=[]
 channel_options.append({'label': 'all', 'value': 'all'})
 
 graph_type_options=[]
-graph_type_options.append({'label': 'Kismet DB', 'value': 'db'})
+graph_type_options.append({'label': 'Client device traffic', 'value': 'db-device'})
+graph_type_options.append({'label': 'Bridged device traffic', 'value': 'db-bridge'})
+graph_type_options.append({'label': 'All device traffic', 'value': 'db-device-and-bridge'})
+graph_type_options.append({'label': 'AP to AP traffic', 'value': 'db-ap'})
+graph_type_options.append({'label': 'All traffic', 'value': 'db-all'})
 
 # https://visjs.github.io/vis-network/docs/network/
 network_options = {
@@ -344,6 +355,6 @@ def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_seconds,n_cl
     return data
 
 if __name__ == '__main__':
-    create_edge_df('db', 'all') # set channel list 
+    create_edge_df('db-device', 'all') # set channel list 
     logging.info("Starting UI:")
     app.run_server(port=8050,host='0.0.0.0',debug=False)
