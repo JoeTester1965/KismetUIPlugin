@@ -6,6 +6,8 @@ from dash.dependencies import Input, Output, State
 import visdcc
 import pandas as pd
 import time
+
+
 import sys
 import json
 import collections
@@ -79,14 +81,9 @@ def create_edge_df(graph_type, graphing_channel):
 
     logging.info("Sending request '%s'", kismet_api_uri)
 
-    try:
-        response = requests.get(kismet_api_uri)
-    except:
-        logging.warn("No API response received, check Kismet server and your API URI and credentials")
-
-    if response.content:
+    if kismet_api_uri:
         try:
-             devices_dict = json.loads(response.content)
+             devices_dict = requests.get(kismet_api_uri).json()
         except:
             return
 
