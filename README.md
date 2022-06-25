@@ -6,16 +6,21 @@ Pretty useful graphs for [Kismet](https://github.com/kismetwireless/kismet) like
 
 # Installing
 
-Run the server [python file](./KismetUIPlugin.py) (needs 3.7 or above) with the [required dependancies](./requirements.txt) installed (sudo pip3 install -r requirements.txt).
+Install [Kismet](https://www.kismetwireless.net/) then:
 
-By default this visualisation server runs on port 8050, change the line at the bottom of the [python file](./KismetUIPlugin.py) if needed.
+``` console
+sudo apt-get install python3-pandas and python3-pandas-lib
 
-If you are lazy and prone to leaving credentials lying around, can edit the following tokens in the [python file](./KismetUIPlugin.py):
+sudo pip3 install -r requirements.txt
+```
+By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
-**Label** | **Example**  | **Explanation**
------ | -------- | ----------- 
-*kismet_credentials* | pi:12345 | kismet api login credentials
-*kismet_uri*  | 192.168.1.50:2501 |  kismet api URI location
+# Using
+
+``` console
+./start.sh
+./stop.sh
+```
 
 # User interface
 
@@ -34,7 +39,7 @@ You can interact with the menu as follows:
 ```Channel``` | Select all or a specific channel seen, this list is updated dynamically by refreshing your browser (CTRL F5)
 ```Graph type``` | Choose what to graph
 ```Kismet credentials``` | username:password e.g. me:12345
-```Kismet URI``` | API URI e.g. 192.168.1.50:2501
+```Kismet URI``` | Kismet API URI e.g. 192.168.1.50:2501
 ```Rewind timeframe (s)``` | How long back you will start to look, bigger values mean bigger graphs, and too small will yield nothing
 ```Refresh``` | Refresh the graph based on what you have
 ```Reset``` | Reset the graph back to defaults
