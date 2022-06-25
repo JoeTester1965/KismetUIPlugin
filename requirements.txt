@@ -1,6 +1,5 @@
 dash
 dash_bootstrap_components
 dpkt
-pandas
 requests
 visdcc
