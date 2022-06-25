@@ -6,12 +6,14 @@ Pretty useful graphs for [Kismet](https://github.com/kismetwireless/kismet) like
 
 # Installing
 
+Python script developed and tested with python 3.9.2
+
 Install [Kismet](https://www.kismetwireless.net/) then:
 
 ``` console
 sudo apt-get install python3-pandas and python3-pandas-lib
 
-sudo pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
