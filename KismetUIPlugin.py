@@ -113,7 +113,16 @@ def create_edge_df(graph_type, graphing_channel):
                 retval_node_details = "channel " +  device['kismet.device.base.channel'] + "<br/>" + device['kismet.device.base.manuf'] + "<br/>" + device['kismet.device.base.macaddr'] + "<br/>" + first_time_text + "<br/>" + last_time_text
         
             else:
-                retval_node_details = first_time_text + "<br/>" + last_time_text
+                probed_devices_text = "Probed for : "
+                
+                try:
+                    probed_devices_dict = device['dot11.device']['dot11.device.probed_ssid_map']
+                    for probed_device in probed_devices_dict:
+                        probed_devices_text = probed_devices_text + probed_device['dot11.probedssid.ssid'] + " , "
+                except:
+                    pass
+                
+                retval_node_details = first_time_text + "<br/>" + last_time_text + "<br/>" + probed_devices_text
 
             mac_details_cache[mac]['node_name'] = retval_node_name
             mac_details_cache[mac]['node_details'] = retval_node_details
