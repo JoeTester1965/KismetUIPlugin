@@ -14,6 +14,10 @@ Install [Kismet](https://www.kismetwireless.net/) then:
 sudo apt-get install python3-pandas and python3-pandas-lib
 
 pip install -r requirements.txt
+
+chmod u+x start.sh
+
+chmod u+x stop.sh
 ```
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
