@@ -43,7 +43,7 @@ ui_variables = {
                     'graph_type' : 'db-device',
                     'rewind_seconds' : 60,
                     'kismet_credentials' : 'username:password',
-                    'kismet_uri' : '192.168.1.50:2501',
+                    'kismet_uri' : '192.168.4.1:2501',
                }
 
 def ieee80211_frequency_to_channel(freq_mhz):
@@ -266,7 +266,6 @@ graph_type_options.append({'label': 'Client device traffic', 'value': 'db-device
 graph_type_options.append({'label': 'Bridged device traffic', 'value': 'db-bridge'})
 graph_type_options.append({'label': 'All device traffic', 'value': 'db-device-and-bridge'})
 graph_type_options.append({'label': 'AP to AP traffic', 'value': 'db-ap'})
-graph_type_options.append({'label': 'All traffic', 'value': 'db-all'})
 
 # https://visjs.github.io/vis-network/docs/network/
 network_options = {
