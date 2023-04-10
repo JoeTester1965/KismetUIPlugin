@@ -40,8 +40,8 @@ tmp_csvfile = "edge_df.csv"
 
 ui_variables = {   
                     'channel' : 'all',
-                    'graph_type' : 'db-device',
-                    'rewind_seconds' : 60,
+                    'graph_type' : 'db-device-and-bridge',
+                    'rewind_seconds' : 600,
                     'kismet_credentials' : 'username:password',
                     'kismet_uri' : '192.168.4.1:2501',
                }
@@ -156,8 +156,6 @@ def create_edge_df(graph_type, graphing_channel):
                     if graph_type == 'db-ap':
                         if device['kismet.device.base.type'] in['Wi-Fi AP', 'Wi-Fi WDS AP']:   
                             valid_device = True
-                    if graph_type == 'db-all':
-                        valid_device = True
 
                     if valid_device == True:
                         if (int(time.time()) - client_map_dict[client_mac]['dot11.client.last_time']) < int(ui_variables['rewind_seconds']):
