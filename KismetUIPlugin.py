@@ -41,7 +41,7 @@ tmp_csvfile = "edge_df.csv"
 ui_variables = {   
                     'channel' : 'all',
                     'graph_type' : 'db-device-and-bridge',
-                    'rewind_seconds' : 600,
+                    'rewind_seconds' : 60,
                     'kismet_credentials' : 'username:password',
                     'kismet_uri' : '192.168.4.1:2501',
                }
