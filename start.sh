@@ -1,6 +1,5 @@
 #!/bin/bash
 
-./stop.sh
+./stop.sh 2>/dev/null
 nohup kismet 2>/dev/null &
-sleep 5
 nohup python KismetUIPlugin.py 2>/dev/null &
