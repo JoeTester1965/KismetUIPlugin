@@ -43,7 +43,7 @@ ui_variables = {
                     'graph_type' : 'db-device-and-bridge',
                     'rewind_seconds' : 60,
                     'kismet_credentials' : 'username:password',
-                    'kismet_uri' : '192.168.4.1:2501',
+                    'kismet_uri' : '127.0.0.1:2501',
                }
 
 def ieee80211_frequency_to_channel(freq_mhz):
@@ -72,7 +72,7 @@ def create_edge_df(graph_type, graphing_channel):
     logging.info("Sending login '%s'", kismet_login_uri)
 
     try:
-        response = requests.get(kismet_login_uri)
+        response = requests.get(kismet_login_uri, verify=False, timeout=10)
     except:
         logging.warn("No response received, check Kismet server and your API URI and credentials")
         return
@@ -83,7 +83,7 @@ def create_edge_df(graph_type, graphing_channel):
 
     if kismet_api_uri:
         try:
-             devices_dict = requests.get(kismet_api_uri).json()
+             devices_dict = requests.get(kismet_api_uri, verify=False, timeout=10).json()
         except:
             return
 
