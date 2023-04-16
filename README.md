@@ -30,7 +30,7 @@ By default this visualisation server runs on port 8050, change the line at the b
 Put something like this in your cron file to restart every 24 hours and manage database growth:
 
 ``` console
-0 0 * * * (cd /home/pi/Documents/KismetUIPlugin; bash ./stop.sh; bash ./start.sh)
+0 0 * * * (cd /home/pi/Documents/KismetUIPlugin; ./stop.sh; ./start.sh)
 ```
 
 # User interface
