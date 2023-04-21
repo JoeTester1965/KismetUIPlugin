@@ -1,3 +1,4 @@
+from re import L
 import dash
 from dash import dcc
 import dash_bootstrap_components as dbc
@@ -6,7 +7,7 @@ from dash.dependencies import Input, Output, State
 import visdcc
 import pandas as pd
 import time
-
+import math
 
 import sys
 import json
@@ -38,12 +39,14 @@ channel_list = []
 
 tmp_csvfile = "edge_df.csv"
 
+epoch = ""
+
 ui_variables = {   
                     'channel' : 'all',
                     'graph_type' : 'db-device-and-bridge',
                     'rewind_seconds' : 60,
                     'kismet_credentials' : 'username:password',
-                    'kismet_uri' : '127.0.0.1:2501',
+                    'kismet_uri' : '192.168.1.50:2501',
                }
 
 def ieee80211_frequency_to_channel(freq_mhz):
@@ -60,11 +63,11 @@ def pretty_format_hex(a):
 
 def create_edge_df(graph_type, graphing_channel):
 
-    global ui_variables, channel_list, channel_options, mac_details_cache
+    global ui_variables, channel_list, channel_options, mac_details_cache,epoch
 
     edge_df_handle = open(tmp_csvfile, 'w', newline='')
     edge_writer = csv.writer(edge_df_handle)
-    edge_header = ['from_mac', 'to_mac', 'channel', 'total_packets', 'total_bytes', 'average_signal'] 
+    edge_header = ['from_mac', 'to_mac', 'channel', 'total_packets', 'total_bytes'] 
     edge_writer.writerow(edge_header)
 
     kismet_login_uri =  "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri']
@@ -76,6 +79,19 @@ def create_edge_df(graph_type, graphing_channel):
     except:
         logging.warn("No response received, check Kismet server and your API URI and credentials")
         return
+
+    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/system/status.json"
+
+    logging.info("Sending request '%s'", kismet_api_uri)
+
+        
+    if kismet_api_uri:
+        try:
+            system_dict = requests.get(kismet_api_uri, verify=False, timeout=10).json()
+            epoch_seconds = system_dict['kismet.system.timestamp.start_sec']
+            epoch = datetime.datetime.fromtimestamp(epoch_seconds).strftime('%d-%m-%Y %H:%M:%S')
+        except:
+            return
 
     kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/devices/views/all/devices.json"
 
@@ -110,7 +126,7 @@ def create_edge_df(graph_type, graphing_channel):
                 else:
                     retval_node_name = device['kismet.device.base.name']
 
-                retval_node_details = "channel " +  device['kismet.device.base.channel'] + "<br/>" + device['kismet.device.base.manuf'] + "<br/>" + device['kismet.device.base.macaddr'] + "<br/>" + first_time_text + "<br/>" + last_time_text
+                retval_node_details =  first_time_text + "<br/>" + last_time_text + "<br/>" + "channel <b>" +  device['kismet.device.base.channel'] + "</b><br/>" + device['kismet.device.base.manuf'] + "<br/>" + device['kismet.device.base.macaddr']
         
             else:
                 probed_devices_text = ""
@@ -118,18 +134,39 @@ def create_edge_df(graph_type, graphing_channel):
                     probed_devices_dict = device['dot11.device']['dot11.device.probed_ssid_map']
                     probed_devices_text = probed_devices_text + "Probed for : "
                     for probed_device in probed_devices_dict:
-                        probed_devices_text = probed_devices_text + probed_device['dot11.probedssid.ssid'] + " , "
+                        text = probed_device['dot11.probedssid.ssid']
+                        if len(text) > 0:
+                            probed_devices_text = probed_devices_text + "<b>" + text + "</b> , "
                 except:
                     pass
-                
-                retval_node_details = first_time_text + "<br/>" + last_time_text + "<br/>" + probed_devices_text
+                retval_node_details = first_time_text + "<br/>" + last_time_text 
+                if len(probed_devices_text) > 0:
+                    retval_node_details = retval_node_details + "<br/>" + probed_devices_text
 
+            signal_strength = 0
+            try:
+                signal_strength = device['kismet.device.base.signal']['kismet.common.signal.last_signal']
+            except:
+                pass
+            if signal_strength < 0:
+                retval_node_details = retval_node_details + "<br/> Last seen signal strength: <b>" + str(signal_strength) + "</b>" 
+
+            retval_node_details = retval_node_details + "<br/>"
+          
             mac_details_cache[mac]['node_name'] = retval_node_name
             mac_details_cache[mac]['node_details'] = retval_node_details
             mac_details_cache[mac]['device_type'] = retval_device_type
             mac_details_cache[mac]['last_time'] = device['kismet.device.base.last_time']
             mac_details_cache[mac]['channel'] = device['kismet.device.base.channel']
-        
+            mac_details_cache[mac]['packets'] = device['kismet.device.base.packets.total']
+            mac_details_cache[mac]['data'] = device['kismet.device.base.datasize']
+            mac_details_cache[mac]['signal'] = 0
+
+            try:
+                mac_details_cache[mac]['signal'] = device['kismet.device.base.signal']['kismet.common.signal.last_signal']  
+            except:
+                pass
+
         # Change this to call a function testing all device types, then only write of device type selected by UI
         for device in devices_dict:
             channel = device['kismet.device.base.channel']
@@ -158,12 +195,15 @@ def create_edge_df(graph_type, graphing_channel):
                             valid_device = True
 
                     if valid_device == True:
+                        packets=mac_details_cache[device_mac]['packets']
+                        data=mac_details_cache[device_mac]['data']
+
                         if (int(time.time()) - client_map_dict[client_mac]['dot11.client.last_time']) < int(ui_variables['rewind_seconds']):
                             if graphing_channel == 'all':
-                                edge_writer.writerow([device_mac,client_mac,channel,0,0,0])       
+                                edge_writer.writerow([device_mac,client_mac,channel,packets,data])       
                             else:
                                 if (int(mac_details_cache[device_mac]['channel']) == graphing_channel): 
-                                    edge_writer.writerow([device_mac,client_mac,channel,0,0,0])
+                                    edge_writer.writerow([device_mac,client_mac,channel,packets,data])
 
             except:
                 pass
@@ -184,7 +224,7 @@ def create_edge_df(graph_type, graphing_channel):
     return
 
 def update_graph_data(channel):
-    global nodes,edges,channel_list,mac_details_cache
+    global nodes,edges,channel_list,mac_details_cache,epoch
 
     try:
      df = pd.read_csv(tmp_csvfile)
@@ -216,7 +256,7 @@ def update_graph_data(channel):
         node_label = "Nothing to display"
         node_title = "Nothing to display"
         node_color = '#FF0000' #red
-        node_size = 12
+        node_size = 10
         if node_name != 'Nothing to display':
             node_label_unfiltered = mac_details_cache[node_name]['node_name']
             node_label = node_label_unfiltered.replace(label_to_replace_in_graph,"\n")
@@ -226,25 +266,25 @@ def update_graph_data(channel):
             'id': node_name, 
             'label': node_label, 
             'shape': 'dot', 
-            'size': 10,
+            'size': node_size,
             'color': node_color, 
             'title': node_title,
-            'font': {'size' : node_size, 'color': "black"}
+            'font': {'size' : 10, 'color': "black"}
             }),
                         
     for row in df.to_dict(orient='records'):
-        source, target, packets, total_bytes, average_signal = row['from_mac'] , row['to_mac'], row['total_packets'], row['total_bytes'], row['average_signal']
+        source, target, packets, total_bytes = row['from_mac'] , row['to_mac'], row['total_packets'], row['total_bytes']
         if packets > 0:
-            label = str(packets) + " packets <br/>" + str(total_bytes) + " bytes<br/>signal strength  " + str(average_signal) 
+            label = str(packets) + " packets average " + str(round(total_bytes/packets)) + " bytes  </br>since " + epoch
         else:
             label = ""
         edges.append({
             'id': source + "__" + target,
             'from': source,
             'to': target,
-            'value': total_bytes,
+            'value': math.log10(total_bytes),
             'color': {'color' : '#CCCCCC'},
-            'width': 1,
+            'width': 2,
             'font': {'size' : 10},
             'title': label
         })
@@ -284,7 +324,7 @@ gui = html.Tr([ html.Tr("Channel"),
                      options=graph_type_options,
                      value=ui_variables['graph_type'],
                      clearable=False)), 
-                html.Tr("Rewind seconds"),
+                html.Tr("Uptime rewind seconds"),
                 html.Tr(dcc.Input(id = 'rewind_seconds',value = ui_variables['rewind_seconds'], style={'textAlign': 'center'})), 
                 html.Tr("Kismet credentials"),
                 html.Tr(dcc.Input(id = 'kismet_credentials', value = ui_variables['kismet_credentials'], type="password", style={'textAlign': 'center'})),
@@ -318,40 +358,20 @@ app.layout = html.Div([table], style =  {'text-align': 'center'})
 def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_seconds,n_clicks):
     
     global nodes,edges,ui_variables
-
-    refresh = False
     
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
 
-    if graph_type:
-         ui_variables['graph_type'] = graph_type
-         refresh = True
-
-    if channel:
-         ui_variables['channel'] = channel
-         refresh = True
-
-    if kismet_credentials:
-        ui_variables['kismet_credentials'] = kismet_credentials
-        refresh = True
+    ui_variables['graph_type'] = graph_type
+    ui_variables['channel'] = channel
+    ui_variables['rewind_seconds'] = rewind_seconds
+    ui_variables['kismet_credentials'] = kismet_credentials
+    ui_variables['kismet_uri']= kismet_uri
     
-    if kismet_uri:
-        ui_variables['kismet_uri'] = kismet_uri
-        refresh = True
-
-    if rewind_seconds:
-        ui_variables['rewind_seconds'] = rewind_seconds
-        refresh = True
-
-    if 'get_ksimet_data' in changed_id:
-        refresh = True
-
-    if refresh == True:
-        nodes.clear()
-        edges.clear()
-        mac_details_cache.clear()
-        create_edge_df(graph_type, channel) 
-        update_graph_data(channel)
+    nodes.clear()
+    edges.clear()
+    mac_details_cache.clear()
+    create_edge_df(graph_type, channel) 
+    update_graph_data(channel)
     
     data = {'nodes':nodes, 'edges':edges} 
     
