@@ -3,4 +3,4 @@ dash_bootstrap_components
 dpkt
 requests
 visdcc
-flask==2.1.3
+flask==2.2.5
