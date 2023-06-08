@@ -28,7 +28,8 @@ chmod u+x start.sh
 
 chmod u+x stop.sh
 ```
-Rather than the scripts above, follow the instructions [here](https://magazine.odroid.com/article/home-assistant-tracking-people-with-wi-fi-using-kismet/) to install kismet as a managed service/
+Rather than the scripts above, follow the instructions [here](https://magazine.odroid.com/article/home-assistant-tracking-people-with-wi-fi-using-kismet/) to install kismet as a managed service.
+
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
 # Using
