@@ -28,7 +28,7 @@ chmod u+x start.sh
 
 chmod u+x stop.sh
 ```
-You may want to follow the instructions [here](https://github.com/kismetwireless/kismet/blob/master/packaging/systemd/README) to install kismet as a managed service (note that you may need to set the user and group of the modified system service to your usual username and group, not kismet!). If you do this, remove the respective lines for kismet in start.sh and stop.sh.
+You may want to follow the instructions [here](https://github.com/kismetwireless/kismet/blob/master/packaging/systemd/README) to install kismet as a managed service (note that you may need to set the user and group of the modified system service to your usual username and group, not kismet!). If you do this, remove the respective lines for **kismet** in [start.sh](start.sh) and [stop.sh](stop.sh).
 
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
