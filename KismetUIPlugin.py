@@ -163,14 +163,14 @@ def create_edge_df(graph_type, graphing_channel):
             mac_details_cache[mac]['signal'] = 0
 
             try:
-                mac_details_cache[mac]['signal'] = device['kismet.device.base.signal']['kismet.common.signal.last_signal']  
+                mac_details_cache[mac]['signal'] = device['kismet.device.base.signal']['kismet.common.signal.last_signal'] 
             except:
                 pass
 
         # Change this to call a function testing all device types, then only write of device type selected by UI
         for device in devices_dict:
-            channel = device['kismet.device.base.channel']
             try:
+                channel = device['kismet.device.base.channel']
                 channel_list.append(int(channel))
             except:
                 pass
@@ -200,10 +200,11 @@ def create_edge_df(graph_type, graphing_channel):
 
                         if (int(time.time()) - client_map_dict[client_mac]['dot11.client.last_time']) < int(ui_variables['rewind_seconds']):
                             if graphing_channel == 'all':
-                                edge_writer.writerow([device_mac,client_mac,channel,packets,data])       
+                                edge_writer.writerow([device_mac,client_mac,channel,packets,data])
                             else:
-                                if (int(mac_details_cache[device_mac]['channel']) == graphing_channel): 
+                                if (int(mac_details_cache[device_mac]['channel']) == graphing_channel) and (int(mac_details_cache[client_mac]['channel']) == graphing_channel): 
                                     edge_writer.writerow([device_mac,client_mac,channel,packets,data])
+                                    
 
             except:
                 pass
@@ -214,7 +215,7 @@ def create_edge_df(graph_type, graphing_channel):
 
     channel_list = list(set(channel_list))
     channel_list.sort()
-    
+
     channel_options.clear()
     channel_options.append({'label': 'all', 'value': 'all'})
     for channel in channel_list:
@@ -257,7 +258,7 @@ def update_graph_data(channel):
         node_title = "Nothing to display"
         node_color = '#FF0000' #red
         node_size = 10
-        if node_name != 'Nothing to display':
+        if node_name != 'Nothing to display' and (len(node_name) == 17): # test length to see if a mac address, saw 'nan' here sometimes !!
             node_label_unfiltered = mac_details_cache[node_name]['node_name']
             node_label = node_label_unfiltered.replace(label_to_replace_in_graph,"\n")
             node_title = mac_details_cache[node_name]['node_details'] 

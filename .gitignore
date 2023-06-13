@@ -2,8 +2,5 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/packets.pcapng
-/packets.pcap
-/edge_df.csv
-/.vs/KismetUIPlugin/v16
 /.vs
+/edge_df.csv
