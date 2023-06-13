@@ -36,6 +36,7 @@ label_to_replace_in_graph = ":-:"
 mac_details_cache = collections.defaultdict(dict)
 
 channel_list = []
+channels_with_edges_list = []
 
 tmp_csvfile = "edge_df.csv"
 
@@ -63,7 +64,7 @@ def pretty_format_hex(a):
 
 def create_edge_df(graph_type, graphing_channel):
 
-    global ui_variables, channel_list, channel_options, mac_details_cache,epoch
+    global ui_variables,channel_list,channels_with_edges_list,channel_options,ac_details_cache,epoch
 
     edge_df_handle = open(tmp_csvfile, 'w', newline='')
     edge_writer = csv.writer(edge_df_handle)
@@ -201,9 +202,12 @@ def create_edge_df(graph_type, graphing_channel):
                         if (int(time.time()) - client_map_dict[client_mac]['dot11.client.last_time']) < int(ui_variables['rewind_seconds']):
                             if graphing_channel == 'all':
                                 edge_writer.writerow([device_mac,client_mac,channel,packets,data])
+                                if int(mac_details_cache[device_mac]['channel']) == int(mac_details_cache[client_mac]['channel']):
+                                    channels_with_edges_list.append(int(mac_details_cache[device_mac]['channel']))                     
                             else:
                                 if (int(mac_details_cache[device_mac]['channel']) == graphing_channel) and (int(mac_details_cache[client_mac]['channel']) == graphing_channel): 
                                     edge_writer.writerow([device_mac,client_mac,channel,packets,data])
+                                    channels_with_edges_list.append(int(mac_details_cache[device_mac]['channel'])) 
                                     
 
             except:
@@ -216,16 +220,26 @@ def create_edge_df(graph_type, graphing_channel):
     channel_list = list(set(channel_list))
     channel_list.sort()
 
+    channels_with_edges_list = list(set(channels_with_edges_list))
+    channels_with_edges_list.sort()
+
+    #
+    #
+    logging.info(channel_list)
+    logging.info(channels_with_edges_list)
+    #
+    #
+
     channel_options.clear()
     channel_options.append({'label': 'all', 'value': 'all'})
-    for channel in channel_list:
+    for channel in channels_with_edges_list: ## was channel list
         channel_options.append({'label': channel, 'value': int(channel)})
 
     logging.info("Kismet DB processed")
     return
 
 def update_graph_data(channel):
-    global nodes,edges,channel_list,mac_details_cache,epoch
+    global nodes,edges,mac_details_cache,epoch
 
     try:
      df = pd.read_csv(tmp_csvfile)
@@ -356,7 +370,7 @@ app.layout = html.Div([table], style =  {'text-align': 'center'})
     [   Input('graph_type', 'value'), Input('channel', 'value'), Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'),
         Input('rewind_seconds', 'value'),Input('get_ksimet_data', 'n_clicks')])
 
-def myfun(graph_type, channel, kismet_credentials,kismet_uri,rewind_seconds,n_clicks):
+def myfun(graph_type, channel, kismet_credentials, kismet_uri, rewind_seconds,n_clicks):
     
     global nodes,edges,ui_variables
     
