@@ -1,3 +1,4 @@
+from cgi import test
 from re import L
 import dash
 from dash import dcc
@@ -18,6 +19,17 @@ import requests
 import os
 import logging
 
+#
+#
+#
+
+test_channels = []
+test_count = 0
+
+#
+#
+#
+
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.INFO)
@@ -35,8 +47,10 @@ label_to_replace_in_graph = ":-:"
 
 mac_details_cache = collections.defaultdict(dict)
 
-channel_list = []
 channels_with_edges_list = []
+
+channel_options=[]
+channel_options.append({'label': 'all', 'value': 'all'})
 
 tmp_csvfile = "edge_df.csv"
 
@@ -64,7 +78,7 @@ def pretty_format_hex(a):
 
 def create_edge_df(graph_type, graphing_channel):
 
-    global ui_variables,channel_list,channels_with_edges_list,channel_options,ac_details_cache,epoch
+    global ui_variables,channels_with_edges_list,channel_options,ac_details_cache,epoch
 
     edge_df_handle = open(tmp_csvfile, 'w', newline='')
     edge_writer = csv.writer(edge_df_handle)
@@ -170,11 +184,9 @@ def create_edge_df(graph_type, graphing_channel):
 
         # Change this to call a function testing all device types, then only write of device type selected by UI
         for device in devices_dict:
-            try:
-                channel = device['kismet.device.base.channel']
-                channel_list.append(int(channel))
-            except:
-                pass
+            
+            channel = device['kismet.device.base.channel']
+
 
             device_mac = device['kismet.device.base.macaddr']
 
@@ -217,22 +229,12 @@ def create_edge_df(graph_type, graphing_channel):
     edge_df_handle.flush()
     edge_df_handle.close()
 
-    channel_list = list(set(channel_list))
-    channel_list.sort()
-
     channels_with_edges_list = list(set(channels_with_edges_list))
     channels_with_edges_list.sort()
 
-    #
-    #
-    logging.info(channel_list)
-    logging.info(channels_with_edges_list)
-    #
-    #
-
     channel_options.clear()
     channel_options.append({'label': 'all', 'value': 'all'})
-    for channel in channels_with_edges_list: ## was channel list
+    for channel in channels_with_edges_list: 
         channel_options.append({'label': channel, 'value': int(channel)})
 
     logging.info("Kismet DB processed")
@@ -268,11 +270,12 @@ def update_graph_data(channel):
         nodes = []
 
     for node_name in node_list:
+
         node_label = "Nothing to display"
         node_title = "Nothing to display"
         node_color = '#FF0000' #red
         node_size = 10
-        if node_name != 'Nothing to display' and (len(node_name) == 17): # test length to see if a mac address, saw 'nan' here sometimes !!
+        if node_name != 'Nothing to display':
             node_label_unfiltered = mac_details_cache[node_name]['node_name']
             node_label = node_label_unfiltered.replace(label_to_replace_in_graph,"\n")
             node_title = mac_details_cache[node_name]['node_details'] 
@@ -311,9 +314,6 @@ try:
 except:
     pass
 
-channel_options=[]
-channel_options.append({'label': 'all', 'value': 'all'})
-
 graph_type_options=[]
 graph_type_options.append({'label': 'Client device traffic', 'value': 'db-device'})
 graph_type_options.append({'label': 'Bridged device traffic', 'value': 'db-bridge'})
@@ -331,7 +331,7 @@ network_options = {
 
 gui = html.Tr([ html.Tr("Channel"),
                 html.Tr(dcc.Dropdown(id = 'channel',
-                     options=channel_options,
+                     options=[{'label': 'all', 'value': 'all'}],
                      value=ui_variables['channel'],
                      clearable=False)),
                 html.Tr("Graph type"),
@@ -353,8 +353,7 @@ gui = html.Tr([ html.Tr("Channel"),
                 html.Tr("Wi-Fi WDS Device", style={'background': '#008080', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Wi-Fi WDS AP", style={'background': '#404040', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Unknown", style={'background': '#800000', 'color': '#FFFFFF', 'font-size': '10px'}),
-                html.Tr([dbc.Button( "Refresh", id="get_ksimet_data", className="mr-2", n_clicks=0),html.Span(id="example-output", style={"verticalAlign": "middle",}),],),
-                html.A(html.Button('Reset'),href='/'),
+                html.Tr([dbc.Button( "Update graph", id="update_graph", className="mr-2", n_clicks=0),html.Span(id="example-output", style={"verticalAlign": "middle",}),],),
             ])
 
 network = visdcc.Network(id = 'net', options = network_options)
@@ -364,30 +363,40 @@ table = dbc.Table(table_body)
 
 app.layout = html.Div([table], style =  {'text-align': 'center'})
 
-#update graph for new channel and rewind_seconds
 @app.callback(
-    Output('net', 'data'),
-    [   Input('graph_type', 'value'), Input('channel', 'value'), Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'),
-        Input('rewind_seconds', 'value'),Input('get_ksimet_data', 'n_clicks')])
+    Output('channel', 'options'),
+    [State('channel', 'options'), Input('graph_type', 'value'), Input('channel', 'value'), 
+        Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'), Input('rewind_seconds', 'value')])
+def myfun1(existing_options, graph_type, channel, kismet_credentials, kismet_uri, rewind_seconds): 
 
-def myfun(graph_type, channel, kismet_credentials, kismet_uri, rewind_seconds,n_clicks):
-    
-    global nodes,edges,ui_variables
-    
-    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    global channels_with_edges_list
+
+    existing_options.clear()
+    existing_options.append({'label': 'all', 'value': 'all'})
+    for channel_seen in channels_with_edges_list: 
+        existing_options.append({'label': channel_seen, 'value': int(channel_seen)})
 
     ui_variables['graph_type'] = graph_type
     ui_variables['channel'] = channel
     ui_variables['rewind_seconds'] = rewind_seconds
     ui_variables['kismet_credentials'] = kismet_credentials
     ui_variables['kismet_uri']= kismet_uri
+
+    return existing_options
+
+@app.callback(
+       Output('net', 'data'),
+        [Input('update_graph', 'n_clicks')])
+def myfun3(n_clicks):
+    
+    global nodes,edges,ui_variables
     
     nodes.clear()
     edges.clear()
     mac_details_cache.clear()
-    create_edge_df(graph_type, channel) 
-    update_graph_data(channel)
-    
+    create_edge_df(ui_variables['graph_type'], ui_variables['channel']) 
+    update_graph_data(ui_variables['channel'])
+
     data = {'nodes':nodes, 'edges':edges} 
     
     return data
