@@ -125,12 +125,8 @@ def create_edge_df(graph_type, graphing_channel):
             last_time_text = "Last seen : " + datetime.datetime.fromtimestamp(device['kismet.device.base.last_time']).strftime('%c')
 
             if retval_device_type == 'Wi-Fi AP':
-                if device['kismet.device.base.name'] == "":
-                    retval_node_name = mac
-                else:
-                    retval_node_name = device['kismet.device.base.name']
-
-                retval_node_details =  first_time_text + "<br/>" + last_time_text + "<br/>" + "channel <b>" +  device['kismet.device.base.channel'] + "</b><br/>" + device['kismet.device.base.manuf'] + "<br/>" + device['kismet.device.base.macaddr']
+                retval_node_name = device['kismet.device.base.manuf'] + "\n" + mac + "\n" + device['kismet.device.base.name']
+                retval_node_details =  first_time_text + "<br/>" + last_time_text + "<br/>" + "channel <b>" +  device['kismet.device.base.channel'] + "</b><br/>"  + device['kismet.device.base.macaddr']
         
             else:
                 probed_devices_text = ""
