@@ -59,7 +59,7 @@ epoch = ""
 ui_variables = {   
                     'channel' : 'all',
                     'graph_type' : 'db-device-and-bridge',
-                    'rewind_seconds' : 60,
+                    'rewind_seconds' : 86400,
                     'kismet_credentials' : 'username:password',
                     'kismet_uri' : '192.168.1.50:2501',
                }
