@@ -28,7 +28,14 @@ chmod u+x start.sh
 
 chmod u+x stop.sh
 ```
-You may want to follow the instructions [here](https://github.com/kismetwireless/kismet/blob/master/packaging/systemd/README) to install kismet as a managed service (note that you may need to set the user and group of the modified system service to your usual username and group, not kismet!). If you do this, remove the respective lines for **kismet** in [start.sh](start.sh) and [stop.sh](stop.sh).
+You may want to follow the instructions [here](https://github.com/kismetwireless/kismet/blob/master/packaging/systemd/README) to install kismet as a managed service (note that you may need to set the user and group of the modified system service to your usual username and group, not kismet!). If you do this, remove the respective lines for **kismet** in [start.sh](start.sh) and [stop.sh](stop.sh). 
+
+I found that using the remote capture tool *kismet_cap_linux_wifi* was more reliable for running over extended periods than adding local capture interfaces to the kismet GUI. For this add something like this to your start and stop scripts:
+
+``` console
+nohup kismet_cap_linux_wifi --connect 192.168.1.50:2501 --source wlan0:name=shed0 --user username --password password &> kismet.log &
+pkill -f kismet_cap_linux_wifi > /dev/null
+```
 
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
