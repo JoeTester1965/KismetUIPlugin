@@ -33,7 +33,9 @@ You may want to follow the instructions [here](https://github.com/kismetwireless
 I found that using the remote capture tool *kismet_cap_linux_wifi* was more reliable for running over extended periods than adding local capture interfaces to the kismet GUI. For this add something like this to your start and stop scripts:
 
 ``` console
+#start
 nohup kismet_cap_linux_wifi --connect 192.168.1.50:2501 --source wlan0:name=shed0 --user username --password password &> kismet.log &
+#stop
 pkill -f kismet_cap_linux_wifi > /dev/null
 ```
 
