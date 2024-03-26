@@ -50,7 +50,7 @@ ui_variables = {
                     'graph_type' : 'db-device-and-bridge',
                     'rewind_seconds' : 3600,
                     'kismet_credentials' : 'username:password',
-                    'kismet_uri' : '192.168.1.50:2501',
+                    'kismet_uri' : '192.168.1.57:2501',
                }
 
 def ieee80211_frequency_to_channel(freq_mhz):
@@ -281,16 +281,17 @@ def update_graph_data(channel):
             label = str(packets) + " packets average " + str(round(total_bytes/packets)) + " bytes  </br>since " + epoch
         else:
             label = ""
-        edges.append({
-            'id': source + "__" + target,
-            'from': source,
-            'to': target,
-            'value': math.log10(total_bytes),
-            'color': {'color' : '#CCCCCC'},
-            'width': 2,
-            'font': {'size' : 10},
-            'title': label
-        })
+        if(total_bytes > 0):
+            edges.append({
+                'id': source + "__" + target,
+                'from': source,
+                'to': target,
+                'value': math.log10(total_bytes),
+                'color': {'color' : '#CCCCCC'},
+                'width': 2,
+                'font': {'size' : 10},
+                'title': label
+            })
 
     return True
 
