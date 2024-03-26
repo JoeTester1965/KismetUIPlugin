@@ -5,4 +5,4 @@ pkill -f KismetUIPlugin.py &> /dev/null
 sudo rm *.kismet &> /dev/null
 sudo rm *.kismet-journal &> /dev/null
 sudo rm *.log &> /dev/null
-sudo rm *.csv &> /dev/null
+sudo rm edge_df.csv &> /dev/null
