@@ -2,19 +2,21 @@ import csv
 import requests
 import logging
 import datetime
+import os
+
 
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.INFO)
 
-current_datetime = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-print("Current date & time : ", current_datetime)
-csvfile = str(current_datetime) + ".csv"
+csvfile = "ssid.csv"
 
-ssid_handle = open(csvfile, 'w', newline='')
+ssid_handle = open(csvfile, 'a', newline='')
 ssid_writer = csv.writer(ssid_handle)
-ssid_header = ['ssid', 'start_time', 'end_time', 'responding_devices_len', 'probing_devices_len', 'advertising_devices_len'] 
-ssid_writer.writerow(ssid_header)
+
+if os.path.getsize(csvfile) == 0:
+    ssid_header = ['ssid', 'start_time', 'end_time', 'responding_devices_len', 'probing_devices_len', 'advertising_devices_len'] 
+    ssid_writer.writerow(ssid_header)
 
 kismet_api_uri =  "http://username:password@192.168.1.57:2501/phy/phy80211/ssids/views/ssids.prettyjson"
 
