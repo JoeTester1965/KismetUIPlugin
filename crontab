@@ -1,0 +1,2 @@
+@reboot sleep 60 && cd /home/pi/Documents/KismetUIPlugin && ./start.sh
+0 0 * * * cd /home/pi/Documents/KismetUIPlugin && ./start.sh > /tmp/KismetUIPlugincronjobstart.log 2>&1

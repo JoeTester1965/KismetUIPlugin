@@ -28,21 +28,22 @@ chmod u+x start.sh
 
 chmod u+x stop.sh
 ```
-You may want to follow the instructions [here](https://github.com/kismetwireless/kismet/blob/master/packaging/systemd/README) to install kismet as a managed service (note that you may need to set the user and group of the modified system service to your usual username and group, not kismet!). If you do this, remove the respective lines for **kismet** in [start.sh](start.sh) and [stop.sh](stop.sh).
+You may want to follow the instructions [here](https://github.com/kismetwireless/kismet/blob/master/packaging/systemd/README) to install kismet as a managed service (note that you may need to set the user and group of the modified system service to your usual username and group, not kismet!). If you do this, remove the respective lines for **kismet** in [start.sh](start.sh) and [stop.sh](stop.sh). 
+
+I found that using the remote capture tool *kismet_cap_linux_wifi* was more reliable for running over extended periods than adding local capture interfaces to the kismet GUI. See [start.sh](start.sh) which includes an example that you will need to edit to meet your needs.
+
 
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
 # Using
 
+Edit [start.sh](start.sh) to meet your interface needs then:
+
 ``` console
 ./start.sh
 ./stop.sh
 ```
-Put something like this in your cron file to restart every 24 hours and manage database growth:
-
-``` console
-0 0 * * * (cd /home/pi/Documents/KismetUIPlugin; ./stop.sh; ./start.sh)
-```
+Put something like [this](crontab) in your crontab file to autostart on boot then also restart every 24 hours and manage database growth.
 
 # User interface
 
