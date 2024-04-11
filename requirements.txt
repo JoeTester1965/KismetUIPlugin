@@ -4,3 +4,4 @@ dpkt
 requests
 visdcc
 QtPy
+plotnine
