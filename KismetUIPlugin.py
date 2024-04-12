@@ -35,6 +35,8 @@ edges = []
 label_to_replace_in_graph = ":-:"
 
 mac_details_cache = collections.defaultdict(dict)
+undirected_probes = collections.defaultdict(dict)
+directed_probes = collections.defaultdict(dict)
 
 channels_with_edges_list = []
 
@@ -67,7 +69,7 @@ def pretty_format_hex(a):
 
 def create_edge_df(graph_type, graphing_channel):
 
-    global ui_variables,channels_with_edges_list,channel_options,ac_details_cache,epoch
+    global ui_variables,channels_with_edges_list,channel_options,mac_details_cache,epoch,directed_probes,undirected_probes,devices_dict
 
     edge_df_handle = open(tmp_csvfile, 'w', newline='')
     edge_writer = csv.writer(edge_df_handle)
@@ -160,7 +162,6 @@ def create_edge_df(graph_type, graphing_channel):
             
             channel = device['kismet.device.base.channel']
 
-
             device_mac = device['kismet.device.base.macaddr']
 
             try:
@@ -176,9 +177,6 @@ def create_edge_df(graph_type, graphing_channel):
                     if graph_type == 'db-device-and-bridge':
                         if device['kismet.device.base.type'] in['Wi-Fi Device', 'Wi-Fi Device (Inferred)','Wi-Fi WDS Device','Wi-Fi Ad-Hoc', 'Wi-Fi Bridged']:   
                             valid_device = True
-                    if graph_type == 'db-ap':
-                        if device['kismet.device.base.type'] in['Wi-Fi AP', 'Wi-Fi WDS AP']:   
-                            valid_device = True
 
                     if valid_device == True:
                         packets=mac_details_cache[device_mac]['packets']
@@ -193,14 +191,8 @@ def create_edge_df(graph_type, graphing_channel):
                                 if (int(mac_details_cache[device_mac]['channel']) == graphing_channel) and (int(mac_details_cache[client_mac]['channel']) == graphing_channel): 
                                     edge_writer.writerow([device_mac,client_mac,channel,packets,data])
                                     channels_with_edges_list.append(int(mac_details_cache[device_mac]['channel'])) 
-                                    
-
             except:
                 pass
-
-
-    edge_df_handle.flush()
-    edge_df_handle.close()
 
     channels_with_edges_list = list(set(channels_with_edges_list))
     channels_with_edges_list.sort()
@@ -209,6 +201,73 @@ def create_edge_df(graph_type, graphing_channel):
     channel_options.append({'label': 'all', 'value': 'all'})
     for channel in channels_with_edges_list: 
         channel_options.append({'label': channel, 'value': int(channel)})
+
+    #
+    # Test code for probes
+    #
+    
+    kismet_api_uri =  "http://username:password@192.168.1.57:2501/phy/phy80211/ssids/views/ssids.prettyjson"
+
+    logging.info("Sending kismet_api_uri '%s'", kismet_api_uri)
+
+    try:
+        response = requests.get(kismet_api_uri, verify=False, timeout=10)
+    except:
+        logging.warn("No response received, check Kismet server and your API URI and credentials")
+
+    if response:
+        ssid_dict = response.json()
+        for ssid in ssid_dict:
+            name = ssid['dot11.ssidgroup.ssid']
+            if len(name) > 0:
+                responding_devices_len = ssid['dot11.ssidgroup.responding_devices_len']
+                probing_devices_len = ssid['dot11.ssidgroup.probing_devices_len']
+                advertising_devices_len = ssid['dot11.ssidgroup.advertising_devices_len']
+                    
+                if ((responding_devices_len == 0) and (advertising_devices_len == 0) and (probing_devices_len > 0)):
+                    probing_device_list = ssid['dot11.ssidgroup.probing_devices']
+                    client_name_list = []
+                    for probing_device in probing_device_list:
+                        for device in devices_dict:
+                            if probing_device == device['kismet.device.base.key']:
+                                client_name_list.append(device['kismet.device.base.macaddr'])
+                                    
+                    client_name_list.sort()
+                    undirected_probes[name]=client_name_list
+                    
+                if (((responding_devices_len > 0) or (advertising_devices_len > 0)) and (probing_devices_len > 0)):
+                    probing_device_list = ssid['dot11.ssidgroup.probing_devices']
+                    client_name_list = []
+                    for probing_device in probing_device_list:
+                        for device in devices_dict:
+                            if probing_device == device['kismet.device.base.key']:
+                                client_name_list.append(device['kismet.device.base.macaddr'])
+
+                    client_name_list.sort()    
+                    directed_probes[name]=client_name_list
+
+    if graph_type == 'directed_probes':
+        for ssid in directed_probes:
+            mac_details_cache[ssid]['node_name'] = ssid
+            mac_details_cache[ssid]['node_details'] = ""
+            mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
+            for mac in directed_probes[ssid]:
+                edge_writer.writerow([ssid,mac,1,1,1])      
+                
+    if graph_type == 'undirected_probes':
+        for ssid in undirected_probes:
+            mac_details_cache[ssid]['node_name'] = ssid
+            mac_details_cache[ssid]['node_details'] = ""
+            mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
+            for mac in undirected_probes[ssid]:
+                edge_writer.writerow([ssid,mac,1,1,1])
+
+    #
+    # Test code for probe graph
+    #
+
+    edge_df_handle.flush()
+    edge_df_handle.close()
 
     logging.info("Kismet DB processed")
     return
@@ -229,6 +288,7 @@ def update_graph_data(channel):
                                 "Wi-Fi AP":                 ['#000000'],      #black
                                 "Wi-Fi Bridged":            ['#808080'],      #grey
                                 "Wi-Fi Device":             ['#008000'],      #green
+                                "Wi-Fi Client":             ['#008000'],      #green
                                 "Wi-Fi Device (Inferred)":  ['#808000'],      #olive
                                 "Wi-Fi Ad-Hoc":             ['#800080'],      #purple   
                                 "Wi-Fi WDS Device":         ['#008080'],      #teal
@@ -292,7 +352,8 @@ graph_type_options=[]
 graph_type_options.append({'label': 'Client device traffic', 'value': 'db-device'})
 graph_type_options.append({'label': 'Bridged device traffic', 'value': 'db-bridge'})
 graph_type_options.append({'label': 'All device traffic', 'value': 'db-device-and-bridge'})
-graph_type_options.append({'label': 'AP to AP traffic', 'value': 'db-ap'})
+graph_type_options.append({'label': 'Directed probes', 'value': 'directed_probes'})
+graph_type_options.append({'label': 'Undirected probes', 'value': 'undirected_probes'})
 
 # https://visjs.github.io/vis-network/docs/network/
 network_options = {
