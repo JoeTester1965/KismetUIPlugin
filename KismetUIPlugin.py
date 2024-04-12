@@ -19,6 +19,10 @@ import requests
 import os
 import logging
 
+import numpy as np
+from plotnine import *
+from mizani.formatters import date_forma
+
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.INFO)
@@ -202,10 +206,6 @@ def create_edge_df(graph_type, graphing_channel):
     for channel in channels_with_edges_list: 
         channel_options.append({'label': channel, 'value': int(channel)})
 
-    #
-    # Test code for probes
-    #
-    
     kismet_api_uri =  "http://username:password@192.168.1.57:2501/phy/phy80211/ssids/views/ssids.prettyjson"
 
     logging.info("Sending kismet_api_uri '%s'", kismet_api_uri)
@@ -261,10 +261,6 @@ def create_edge_df(graph_type, graphing_channel):
             mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
             for mac in undirected_probes[ssid]:
                 edge_writer.writerow([ssid,mac,1,1,1])
-
-    #
-    # Test code for probe graph
-    #
 
     edge_df_handle.flush()
     edge_df_handle.close()
