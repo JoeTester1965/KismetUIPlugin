@@ -57,7 +57,6 @@ ui_variables = {
                     'rewind_seconds' : 3600,
                     'kismet_credentials' : 'username:password',
                     'kismet_uri' : '192.168.1.57:2501',
-                    'x_times' : 3,
                }
 
 def ieee80211_frequency_to_channel(freq_mhz):
@@ -385,14 +384,13 @@ gui = html.Tr([ html.Tr("Channel"),
                 html.Tr("Wi-Fi WDS Device", style={'background': '#008080', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Wi-Fi WDS AP", style={'background': '#404040', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Unknown", style={'background': '#800000', 'color': '#FFFFFF', 'font-size': '10px'}),
-                html.Tr([dbc.Button( "Update graph", id="update_graph", className="mr-2", n_clicks=0),html.Span(id="example-output-1", style={"verticalAlign": "middle",}),],),
+                html.Tr([dbc.Button( "Update graph", id="update_graph", n_clicks=0),html.Span(id="button-1", style={"verticalAlign": "middle"}),],),     
                 html.Tr(""),
                 html.Tr(""),
-                html.Tr("Brucie bonus"),
-                html.Tr([dbc.Button( "Daily undiretced probes", id="probes", n_clicks=0, download="ssid.csv", external_link=True,),html.Span(id="example-output-2", style={"verticalAlign": "middle",}),],),
-                dcc.Download(id="download-dataframe-csv"),
-                html.Tr(dcc.Input(id = 'x_times',value = ui_variables['x_times'], style={'textAlign': 'center'})), 
-                html.Tr("Seen at least X times"),
+                html.Tr(""),
+                html.Tr(""),
+                html.Tr([dbc.Button( "Daily stats download", id="stats", n_clicks=0, download="stats.zip", external_link=True,),html.Span(id="button-2", style={"verticalAlign": "middle",}),],),
+                dcc.Download(id="download-dataframe"),
             ])
 
 network = visdcc.Network(id = 'net', options = network_options)
@@ -405,8 +403,8 @@ app.layout = html.Div([table], style =  {'text-align': 'center'})
 @app.callback(
     Output('channel', 'options'),
     [State('channel', 'options'), Input('graph_type', 'value'), Input('channel', 'value'), 
-        Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'), Input('rewind_seconds', 'value'), Input('x_times', 'value')])
-def myfun1(existing_options, graph_type, channel, kismet_credentials, kismet_uri, rewind_seconds, x_times): 
+        Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'), Input('rewind_seconds', 'value')])
+def myfun1(existing_options, graph_type, channel, kismet_credentials, kismet_uri, rewind_seconds): 
 
     global channels_with_edges_list
 
@@ -420,7 +418,6 @@ def myfun1(existing_options, graph_type, channel, kismet_credentials, kismet_uri
     ui_variables['rewind_seconds'] = rewind_seconds
     ui_variables['kismet_credentials'] = kismet_credentials
     ui_variables['kismet_uri']= kismet_uri
-    ui_variables['x_times']= x_times
 
     return existing_options
 
@@ -442,14 +439,12 @@ def myfun3(n_clicks):
     return data
 
 @app.callback(
-    Output('download-dataframe-csv', 'data'),
-    [Input('probes', 'n_clicks')],
+    Output('download-dataframe', 'data'),
+    [Input('stats', 'n_clicks')],
     prevent_initial_call=True)
 def myfun4(n_clicks):
-    
-    logging.info("Code and rename Figure_1.png ssid.png")
-    
-    return dcc.send_file("Figure_1.png")
+      
+    return dcc.send_file("stats.zip")
 
 if __name__ == '__main__':
     create_edge_df('db-device', 'all') # set channel list 
