@@ -77,29 +77,6 @@ def create_edge_df(graph_type, graphing_channel):
     edge_header = ['from_mac', 'to_mac', 'channel', 'total_packets', 'total_bytes'] 
     edge_writer.writerow(edge_header)
 
-    kismet_login_uri =  "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri']
-
-    logging.info("Sending login '%s'", kismet_login_uri)
-
-    try:
-        response = requests.get(kismet_login_uri, verify=False, timeout=10)
-    except:
-        logging.warn("No response received, check Kismet server and your API URI and credentials")
-        return
-
-    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/system/status.json"
-
-    logging.info("Sending request '%s'", kismet_api_uri)
-
-        
-    if kismet_api_uri:
-        try:
-            system_dict = requests.get(kismet_api_uri, verify=False, timeout=10).json()
-            epoch_seconds = system_dict['kismet.system.timestamp.start_sec']
-            epoch = datetime.datetime.fromtimestamp(epoch_seconds).strftime('%d-%m-%Y %H:%M:%S')
-        except:
-            return
-
     kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/devices/views/all/devices.json"
 
     logging.info("Sending request '%s'", kismet_api_uri)
@@ -466,4 +443,27 @@ def myfun4(n_clicks):
 if __name__ == '__main__':
     create_edge_df('db-device', 'all') # set channel list 
     logging.info("Starting UI:")
+    
+    kismet_login_uri =  "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri']
+
+    logging.info("Sending login '%s'", kismet_login_uri)
+
+    try:
+        response = requests.get(kismet_login_uri, verify=False, timeout=10)
+    except:
+        logging.warn("No response received, check Kismet server and your API URI and credentials")
+
+    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/system/status.json"
+
+    logging.info("Sending request '%s'", kismet_api_uri)
+
+        
+    if kismet_api_uri:
+        try:
+            system_dict = requests.get(kismet_api_uri, verify=False, timeout=10).json()
+            epoch_seconds = system_dict['kismet.system.timestamp.start_sec']
+            epoch = datetime.datetime.fromtimestamp(epoch_seconds).strftime('%d-%m-%Y %H:%M:%S')
+        except:
+           logging.warn("No epoch received, check Kismet server and your API URI and credentials") 
+    
     app.run_server(port=8050,host='0.0.0.0',debug=False)
