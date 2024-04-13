@@ -1,8 +1,10 @@
 #!/bin/bash
-pkill -f kismet_cap_linux_wifi > /dev/null
-pkill -f kismet > /dev/null
-pkill -f KismetUIPlugin.py &> /dev/null
-sudo rm *.kismet &> /dev/null
-sudo rm *.kismet-journal &> /dev/null
-sudo rm *.log &> /dev/null
-sudo rm edge_df.csv &> /dev/null
+nohup pkill -f kismet_cap_linux_wifi &> /dev/null
+nohup pkill -f kismet &> /dev/null
+nohup pkill -f KismetUIPlugin.py &> /dev/null
+nohup sudo rm *.kismet &> /dev/null
+nohup sudo rm *.kismet-journal &> /dev/null
+nohup sudo rm *.log &> /dev/null
+nohup sudo rm edge_df.csv &> /dev/null
+nohup sudo rm probes.png &> /dev/null
+nohup sudo rm nohup.out &> /dev/null

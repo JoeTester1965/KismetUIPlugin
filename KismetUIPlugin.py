@@ -37,6 +37,7 @@ label_to_replace_in_graph = ":-:"
 mac_details_cache = collections.defaultdict(dict)
 undirected_probes = collections.defaultdict(dict)
 directed_probes = collections.defaultdict(dict)
+all_probes = collections.defaultdict(dict)
 
 channels_with_edges_list = []
 
@@ -69,7 +70,7 @@ def pretty_format_hex(a):
 
 def create_edge_df(graph_type, graphing_channel):
 
-    global ui_variables,channels_with_edges_list,channel_options,mac_details_cache,epoch,directed_probes,undirected_probes,devices_dict
+    global ui_variables,channels_with_edges_list,channel_options,mac_details_cache,epoch,directed_probes,undirected_probes,all_probes,devices_dict
 
     edge_df_handle = open(tmp_csvfile, 'w', newline='')
     edge_writer = csv.writer(edge_df_handle)
@@ -241,6 +242,17 @@ def create_edge_df(graph_type, graphing_channel):
 
                     client_name_list.sort()    
                     directed_probes[name]=client_name_list
+                
+                if (probing_devices_len > 0):
+                    probing_device_list = ssid['dot11.ssidgroup.probing_devices']
+                    client_name_list = []
+                    for probing_device in probing_device_list:
+                        for device in devices_dict:
+                            if probing_device == device['kismet.device.base.key']:
+                                client_name_list.append(device['kismet.device.base.macaddr'])
+
+                    client_name_list.sort()    
+                    all_probes[name]=client_name_list
 
     if graph_type == 'directed_probes':
         for ssid in directed_probes:
@@ -256,6 +268,14 @@ def create_edge_df(graph_type, graphing_channel):
             mac_details_cache[ssid]['node_details'] = ""
             mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
             for mac in undirected_probes[ssid]:
+                edge_writer.writerow([ssid,mac,1,1,1])
+    
+    if graph_type == 'all_probes':
+        for ssid in all_probes:
+            mac_details_cache[ssid]['node_name'] = ssid
+            mac_details_cache[ssid]['node_details'] = ""
+            mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
+            for mac in all_probes[ssid]:
                 edge_writer.writerow([ssid,mac,1,1,1])
 
     edge_df_handle.flush()
@@ -346,6 +366,7 @@ graph_type_options.append({'label': 'Bridged device traffic', 'value': 'db-bridg
 graph_type_options.append({'label': 'All device traffic', 'value': 'db-device-and-bridge'})
 graph_type_options.append({'label': 'Directed probes', 'value': 'directed_probes'})
 graph_type_options.append({'label': 'Undirected probes', 'value': 'undirected_probes'})
+graph_type_options.append({'label': 'All probes', 'value': 'all_probes'})
 
 # https://visjs.github.io/vis-network/docs/network/
 network_options = {
