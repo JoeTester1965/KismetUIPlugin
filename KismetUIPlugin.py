@@ -19,10 +19,6 @@ import requests
 import os
 import logging
 
-import numpy as np
-from plotnine import *
-from mizani.formatters import date_format
-
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.INFO)
