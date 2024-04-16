@@ -338,9 +338,9 @@ except:
     pass
 
 graph_type_options=[]
-graph_type_options.append({'label': 'Client device traffic', 'value': 'db-device'})
-graph_type_options.append({'label': 'Bridged device traffic', 'value': 'db-bridge'})
-graph_type_options.append({'label': 'All device traffic', 'value': 'db-device-and-bridge'})
+graph_type_options.append({'label': 'Client device data', 'value': 'db-device'})
+graph_type_options.append({'label': 'Bridged device data', 'value': 'db-bridge'})
+graph_type_options.append({'label': 'All device data', 'value': 'db-device-and-bridge'})
 graph_type_options.append({'label': 'Directed probes', 'value': 'directed_probes'})
 graph_type_options.append({'label': 'Undirected probes', 'value': 'undirected_probes'})
 graph_type_options.append({'label': 'All probes', 'value': 'all_probes'})
