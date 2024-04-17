@@ -10,3 +10,11 @@ nohup.out
 KismetUIPlugin.log
 ssid.csv
 stats.zip
+data_frames.csv
+probes.csv
+ToDo.txt
+process_real_time_probes.cfg
+kismet.log
+*.kismet
+*.kismet-journal
+
