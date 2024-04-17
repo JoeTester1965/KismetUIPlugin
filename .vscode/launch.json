@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["./ssid.csv", "3"]
+            "args": ["probes.csv"]
         }
     ]
 }

@@ -6,5 +6,4 @@ nohup sudo rm *.kismet &> /dev/null
 nohup sudo rm *.kismet-journal &> /dev/null
 nohup sudo rm *.log &> /dev/null
 nohup sudo rm edge_df.csv &> /dev/null
-nohup sudo rm probes.png &> /dev/null
 nohup sudo rm nohup.out &> /dev/null
