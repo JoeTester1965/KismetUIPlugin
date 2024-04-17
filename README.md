@@ -73,7 +73,7 @@ You can run [start_realtime.sh](start_realtime.sh) as root and then get MQTT ale
 
 Also The 'Probes as CSV' button on the UI can be used to dowload a file, which when processed with [probe_viewer.py](probe_viewer.py) gives you this:
 
-<img src="./example-probes.JPG">
+<img src="./example-probes.jpg">
 
 Enjoy
 
