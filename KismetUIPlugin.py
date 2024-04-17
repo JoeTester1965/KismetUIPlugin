@@ -383,7 +383,7 @@ gui = html.Tr([ html.Tr("Channel"),
                 html.Tr(""),
                 html.Tr(""),
                 html.Tr(""),
-                html.Tr([dbc.Button( "Daily stats download", id="stats", n_clicks=0, download="stats.zip", external_link=True,),html.Span(id="button-2", style={"verticalAlign": "middle",}),],),
+                html.Tr([dbc.Button( "Probes plot", id="stats", n_clicks=0, download="probes.jpg", external_link=True,),html.Span(id="button-2", style={"verticalAlign": "middle",}),],),
                 dcc.Download(id="download-dataframe"),
             ])
 
