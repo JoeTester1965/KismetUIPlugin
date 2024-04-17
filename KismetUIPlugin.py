@@ -438,7 +438,7 @@ def myfun3(n_clicks):
     prevent_initial_call=True)
 def myfun4(n_clicks):
       
-    return dcc.send_file("stats.zip")
+    return dcc.send_file("probes.jpg")
 
 if __name__ == '__main__':
     create_edge_df('db-device', 'all') # set channel list 
