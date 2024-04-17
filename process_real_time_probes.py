@@ -24,6 +24,10 @@ def rolling_reader(filename, poll_period=.1, encoding="utf-8"):
         pos = fp.tell()
 
 
+if len(sys.argv) != 3:
+    print("Usage: %s config_filename, csv_filename", sys.argv[0])
+    sys.exit(0)
+
 config = configparser.ConfigParser()
 config.read(sys.argv[1])
 
@@ -42,7 +46,7 @@ if config.has_section("mqtt"):
         print("Cannot connect to MQTT, check config and server")
     mqtt_client.loop_start()
 
-reader = csv.reader(rolling_reader("probes.csv"))
+reader = csv.reader(rolling_reader(sys.argv[2]))
 for row in reader:
     if  row[8] in ssid_list:
         print(row)
