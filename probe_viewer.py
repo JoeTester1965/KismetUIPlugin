@@ -1,6 +1,4 @@
 import sys
-import os
-import requests
 import logging
 import datetime
 import logging
@@ -8,6 +6,7 @@ import numpy as np
 import pandas as pd
 from plotnine import *
 from mizani.formatters import date_format
+import os
 
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
@@ -24,38 +23,23 @@ logging.info("Processing %s", csvfile)
 
 probe_df = pd.read_csv(csvfile).dropna()
 
+probe_df = pd.read_csv(csvfile, usecols=[0,6,7,8], names=['timestamp', 'channel', 'signal_dbm', 'ssid'])
 
-#
-# Change below!
-#
+probe_df['timestamp'] = probe_df['timestamp'].apply(lambda x: datetime.datetime.fromtimestamp(x))
 
-probe_df[0] = probe_df[0].apply(lambda x: datetime.fromtimestamp(x).strftime("%I:%M:%S"))
+title = "Probed SSIDs"
 
-probe_df_temp = probe_df.loc[((probe_df['advertising_devices_len'] == 0) & (probe_df['responding_devices_len'] == 0)),:]
+graph = ggplot(probe_df) 
 
-frequency_ssid = probe_df_temp['ssid'].value_counts()
-frequency_indexes = frequency_ssid[frequency_ssid >= times_seen_threshold].index 
-probe_df_temp_filtered = probe_df_temp[probe_df_temp['ssid'].isin(frequency_indexes)]
-
-for index,row in probe_df_temp_filtered.iterrows():
-    #row['start_time'].replace(year=2000, month=1, day=1)
-    probe_df_temp_filtered.at[index, 'start_time_datetime'] = pd.to_datetime(row['start_time'][11:16])
-    probe_df_temp_filtered.at[index, 'end_time_datetime'] = pd.to_datetime(row['end_time'][11:16])
-    pass
-
-title = "Probed SSIDs not advertising or responding, seen at least " + str(times_seen_threshold) + " times and wrapped every 24 hours."
-
-graph = ggplot(probe_df_temp_filtered) + geom_errorbar(aes(x = 'ssid', ymax = 'start_time_datetime', ymin = 'end_time_datetime' ), size = 2, color = "black", alpha=0.1) + \
+graph = ggplot(probe_df, aes(y = 'timestamp', x = 'ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
         ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
         scale_y_datetime(date_breaks = "1 hour", labels = date_format("%H")) + \
         theme(axis_text_y=element_text(size=6)) + theme(figure_size=(12, 12)) + \
-      ggtitle(title)
+        ggtitle(title)
 
-plot_filename = os.getcwd() + '/probes.png'
-
+plot_filename = os.getcwd() + '\probes.jpg'
 logging.info("Saving %s", plot_filename)
-
-graph.save(filename = plot_filename)
+graph.save(filename = plot_filename, dpi = 600)
 
 
 

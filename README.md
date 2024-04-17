@@ -69,15 +69,4 @@ You can interact with the menu as follows:
 
 Enjoy
 
-# Brucie bonus
-
-Understand even more about your neighbourhood by running
-
-``` console
-python3 ./ssid_csv_viewer.py ssid.csv number_of_times_ssid_at_least_seen
-```
-to get something like this redacted example:
-
-<img src="./Figure_1.png">
-
 
