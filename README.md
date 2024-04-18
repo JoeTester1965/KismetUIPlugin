@@ -67,6 +67,14 @@ You can interact with the menu as follows:
 ```Refresh``` | Refresh the graph based on what you have
 ```Reset``` | Reset the graph back to defaults
 
+# Brucie Bonus, real time Probe alerts and better visibility
+
+You can run [start_realtime.sh](start_realtime.sh) as root and then get MQTT alerts when a probe comes in based on what is in what is in [process_real_time_probes.example.cfg](process_real_time_probes.example.cfg).
+
+Also The 'Probes as CSV' button on the UI can be used to dowload a file, which when processed with [probe_viewer.py](probe_viewer.py) gives you this:
+
+<img src="./example-probes.jpg">
+
 Enjoy
 
 
