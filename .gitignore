@@ -2,8 +2,9 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
-/edge_df.csv
+.vscode
+.vs
+edge_df.csv
 Collector.log
 Scanner.log
 nohup.out
@@ -17,5 +18,4 @@ process_real_time_probes.cfg
 kismet.log
 *.kismet
 *.kismet-journal
-
 probes.jpg
