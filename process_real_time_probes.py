@@ -25,13 +25,13 @@ def rolling_reader(filename, poll_period=.1, encoding="utf-8"):
 
 
 if len(sys.argv) != 3:
-    print("Usage: %s config_filename, csv_filename", sys.argv[0])
+    print("Usage: %s config_filename csv_filename" % (sys.argv[0]))
     sys.exit(0)
 
 config = configparser.ConfigParser()
 config.read(sys.argv[1])
 
-ssid_list = ast.literal_eval(config.get("probes", "ssid_matchlist")) 
+ssid_blacklist = ast.literal_eval(config.get("probes", "ssid_blacklist")) 
 
 if config.has_section("mqtt"):
     mqtt_ip_address = config["mqtt"]["mqtt_ip_address"] 
@@ -48,7 +48,7 @@ if config.has_section("mqtt"):
 
 reader = csv.reader(rolling_reader(sys.argv[2]))
 for row in reader:
-    if  row[8] in ssid_list:
+    if  row[8] not in ssid_blacklist:
         print(row)
         if config.has_section("mqtt"):
             mqtt_client.publish(mqtt_topic, row[8]) 
