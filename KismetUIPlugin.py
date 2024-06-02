@@ -180,7 +180,7 @@ def create_edge_df(graph_type, graphing_channel):
     for channel in channels_with_edges_list: 
         channel_options.append({'label': channel, 'value': int(channel)})
 
-    kismet_api_uri =  "http://username:password@192.168.1.57:2501/phy/phy80211/ssids/views/ssids.prettyjson"
+    kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/phy/phy80211/ssids/views/ssids.prettyjson"
 
     logging.info("Sending kismet_api_uri '%s'", kismet_api_uri)
 
