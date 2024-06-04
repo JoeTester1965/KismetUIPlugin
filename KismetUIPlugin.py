@@ -53,7 +53,7 @@ ui_variables = {
                     'graph_type' : 'db-device-and-bridge',
                     'rewind_seconds' : 3600,
                     'kismet_credentials' : 'username:password',
-                    'kismet_uri' : '192.168.1.57:2501',
+                    'kismet_uri' : '192.168.1.50:2501',
                }
 
 def ieee80211_frequency_to_channel(freq_mhz):
@@ -384,7 +384,9 @@ gui = html.Tr([ html.Tr("Channel"),
                 html.Tr(""),
                 html.Tr(""),
                 html.Tr([dbc.Button( "Probes as csv", id="stats", n_clicks=0, download="probes_archive.csv", external_link=True,),html.Span(id="button-2", style={"verticalAlign": "middle",}),],),
-                dcc.Download(id="download-dataframe"),
+                dcc.Download(id="download-csv"),
+                html.Tr([dbc.Button( "Probes as jpg", id="stats_jpg", n_clicks=0, download="probes.jpg", external_link=True,),html.Span(id="button-3", style={"verticalAlign": "middle",}),],),
+                dcc.Download(id="download-jpg"),
             ])
 
 network = visdcc.Network(id = 'net', options = network_options)
@@ -433,12 +435,20 @@ def myfun3(n_clicks):
     return data
 
 @app.callback(
-    Output('download-dataframe', 'data'),
+    Output('download-csv', 'data'),
     [Input('stats', 'n_clicks')],
     prevent_initial_call=True)
 def myfun4(n_clicks):
       
     return dcc.send_file("probes_archive.csv")
+
+@app.callback(
+    Output('download-jpg', 'data'),
+    [Input('stats_jpg', 'n_clicks')],
+    prevent_initial_call=True)
+def myfun5(n_clicks):
+      
+    return dcc.send_file("probes.jpg")
 
 if __name__ == '__main__':
     create_edge_df('db-device', 'all') # set channel list 
