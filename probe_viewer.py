@@ -38,7 +38,7 @@ graph = ggplot(probe_df)
 graph = ggplot(probe_df, aes(y = 'timestamp', x = 'ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
         ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
         scale_y_datetime(date_breaks = "1 hour", labels = date_format("%H")) + \
-        theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 4)) + \
+        theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 8)) + \
         ggtitle(title)
 
 plot_filename = os.getcwd() + '/probes.jpg'
