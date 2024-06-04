@@ -5,6 +5,11 @@ import sys
 import configparser
 import ast
 import paho.mqtt.client as mqtt
+import logging
+
+logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    datefmt='%Y-%m-%d:%H:%M:%S',
+    level=logging.INFO)
   
 def rolling_reader(filename, poll_period=.1, encoding="utf-8"):
     pos = 0
@@ -25,7 +30,7 @@ def rolling_reader(filename, poll_period=.1, encoding="utf-8"):
 
 
 if len(sys.argv) != 3:
-    print("Usage: %s config_filename csv_filename" % (sys.argv[0]))
+    logging.critical("Usage: %s config_filename csv_filename", sys.argv[0])
     sys.exit(0)
 
 config = configparser.ConfigParser()
@@ -43,12 +48,15 @@ if config.has_section("mqtt"):
     try:
         mqtt_client.connect(mqtt_ip_address, 1883)
     except:
-        print("Cannot connect to MQTT, check config and server")
+        logging.warning("Cannot connect to MQTT check config file and server")
     mqtt_client.loop_start()
 
 reader = csv.reader(rolling_reader(sys.argv[2]))
 for row in reader:
-    if  row[8] not in ssid_blacklist:
-        print(row)
+    ssid = row[8] 
+    #Use this line only if have the latest version of tshark which outputs hex not ascii for wlan.ssid
+    ssid = bytes.fromhex(ssid).decode("latin-1")     
+    if  ssid not in ssid_blacklist:
         if config.has_section("mqtt"):
-            mqtt_client.publish(mqtt_topic, row[8]) 
+            logging.info("Hit: %s", ssid)
+            mqtt_client.publish(mqtt_topic, ssid) 
