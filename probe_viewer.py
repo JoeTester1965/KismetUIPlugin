@@ -41,7 +41,7 @@ graph = ggplot(probe_df, aes(y = 'timestamp', x = 'ssid')) + geom_point(aes(size
         theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 4)) + \
         ggtitle(title)
 
-plot_filename = os.getcwd() + '\probes.jpg'
+plot_filename = os.getcwd() + '/probes.jpg'
 logging.info("Saving %s", plot_filename)
 graph.save(filename = plot_filename, dpi = 600)
 
