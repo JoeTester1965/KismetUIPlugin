@@ -20,7 +20,7 @@ Tested on Kali Linux release 2023.2 (ARM, Pi4)
 Install [Kismet](https://www.kismetwireless.net/) then:
 
 ``` console
-sudo apt-get install python3-pandas python3-pandas-lib libopenblas-dev
+sudo apt-get install python3-pandas python3-pandas-lib libopenblas-dev tshark
 
 pip3 install -r requirements.txt
 

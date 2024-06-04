@@ -19,3 +19,5 @@ kismet.log
 *.kismet
 *.kismet-journal
 probes.jpg
+probes_archive.csv
+probes_archive.csv

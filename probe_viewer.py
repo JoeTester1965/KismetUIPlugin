@@ -29,6 +29,9 @@ probe_df['timestamp'] = probe_df['timestamp'].apply(lambda x: datetime.datetime.
 
 probe_df['ssid'] = probe_df['ssid'].apply(lambda x: bytes.fromhex(x).decode('latin-1'))
 
+#Use this if kave the latest version of tshark which outputs hex not ascii for wlan.ssid
+#probe_df['ssid'] = probe_df['ssid'].apply(lambda x: bytes.fromhex(x).decode('latin-1'))
+
 title = "Probed SSIDs"
 
 graph = ggplot(probe_df) 
