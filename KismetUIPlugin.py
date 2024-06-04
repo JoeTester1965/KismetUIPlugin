@@ -383,7 +383,7 @@ gui = html.Tr([ html.Tr("Channel"),
                 html.Tr(""),
                 html.Tr(""),
                 html.Tr(""),
-                html.Tr([dbc.Button( "Probes as csv", id="stats", n_clicks=0, download="probes.csv", external_link=True,),html.Span(id="button-2", style={"verticalAlign": "middle",}),],),
+                html.Tr([dbc.Button( "Probes as csv", id="stats", n_clicks=0, download="probes_archive.csv", external_link=True,),html.Span(id="button-2", style={"verticalAlign": "middle",}),],),
                 dcc.Download(id="download-dataframe"),
             ])
 
@@ -438,7 +438,7 @@ def myfun3(n_clicks):
     prevent_initial_call=True)
 def myfun4(n_clicks):
       
-    return dcc.send_file("probes.csv")
+    return dcc.send_file("probes_archive.csv")
 
 if __name__ == '__main__':
     create_edge_df('db-device', 'all') # set channel list 

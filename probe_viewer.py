@@ -27,6 +27,8 @@ probe_df = pd.read_csv(csvfile, usecols=[0,6,7,8], names=['timestamp', 'channel'
 
 probe_df['timestamp'] = probe_df['timestamp'].apply(lambda x: datetime.datetime.fromtimestamp(x))
 
+probe_df['ssid'] = probe_df['ssid'].apply(lambda x: bytes.fromhex(x).decode('latin-1'))
+
 title = "Probed SSIDs"
 
 graph = ggplot(probe_df) 
