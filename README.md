@@ -37,7 +37,7 @@ By default this visualisation server runs on port 8050, change the line at the b
 
 # Using
 
-Edit [start.sh](start.sh) to meet your interface needs then:
+Edit kismet.conf and/or [start.sh](start.sh) to meet your interface needs then:
 
 ``` console
 ./start.sh
