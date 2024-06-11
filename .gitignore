@@ -4,6 +4,13 @@
 
 .vscode
 .vs
+bin/
+etc/
+include/
+lib/
+lib64
+share/
+pyvenv.cfg
 edge_df.csv
 Collector.log
 Scanner.log
