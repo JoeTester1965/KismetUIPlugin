@@ -36,7 +36,10 @@ if len(sys.argv) != 3:
 config = configparser.ConfigParser()
 config.read(sys.argv[1])
 
-ssid_blacklist = ast.literal_eval(config.get("probes", "ssid_blacklist")) 
+if config.has_section("probes"):
+    ssid_blacklist = ast.literal_eval(config.get("probes", "ssid_blacklist")) 
+else:
+    ssid_blacklist = ""
 
 if config.has_section("mqtt"):
     mqtt_ip_address = config["mqtt"]["mqtt_ip_address"] 
