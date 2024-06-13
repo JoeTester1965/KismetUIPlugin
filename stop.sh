@@ -10,4 +10,4 @@ nohup rm *.kismet-journal &> /dev/null
 nohup rm *.log &> /dev/null
 nohup rm edge_df.csv &> /dev/null
 nohup rm nohup.out &> /dev/null
-pkill -f tshark > /dev/null
+nohup pkill -f tshark > /dev/null
