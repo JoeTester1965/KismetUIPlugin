@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VIRTUAL_ENV_IF_NEEDED=$PWD/bin/activate
+VIRTUAL_ENV_IF_NEEDED=$PWD/venv/bin/activate
 
 #Use a python virtual env if needed
 if [ -s $VIRTUAL_ENV_IF_NEEDED ]; then
