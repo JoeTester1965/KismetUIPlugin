@@ -64,7 +64,7 @@ You can interact with the menu as follows:
 
 You can also get MQTT alerts when a probe comes in based on what is in what is in [process_real_time_probes.example.cfg](process_real_time_probes.example.cfg).
 
-Also The 'Probes as CSV' button on the UI can be used to dowload a file like below (this is only created when you run start.sh or stop.sh, i.e. for your last capture session).
+Also The 'Probes as CSV' button on the UI can be used to dowload a file like below (this is only created when you run start.sh, i.e. for your last capture session).
 
 This will only work if tshark is configured for non root users. Use 'sudo dpkg-reconfigure wireshark-common' if needed and edit monitor interface for tshark as used by kismet. 
 
