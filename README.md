@@ -15,8 +15,6 @@ Pretty useful graphs for [Kismet](https://github.com/kismetwireless/kismet) like
 
 # Installing
 
-Tested on Kali Linux release 2023.2 (ARM, Pi4)
-
 Install [Kismet](https://www.kismetwireless.net/) then:
 
 ``` console
