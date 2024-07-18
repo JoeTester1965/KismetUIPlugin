@@ -27,5 +27,4 @@ kismet.log
 *.kismet-journal
 probes.jpg
 probes_archive.csv
-probes_archive.csv
 probes.sqlite3
