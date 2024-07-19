@@ -21,9 +21,6 @@ else
 fi
 nohup python3 process_real_time_probes.py $CONFIG_FILE $CSV_FILE 2>/dev/null &
 
-#produce a pretty picture of probes found on last tun
-nohup python3 probe_viewer.py $ARCHIVE_CSV_FILE &> /dev/null &
-
 nohup kismet &> kismet.log & 
 nohup python3 KismetUIPlugin.py &>KismetUIPlugin.log &
 
