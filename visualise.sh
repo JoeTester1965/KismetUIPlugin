@@ -11,17 +11,12 @@ else
     echo "No local python virtual env at $VIRTUAL_ENV is being used "
 fi
 
-nohup python3 probe_viewer.py $ARCHIVE_CSV_FILE
+nohup python3 probe_viewer.py $ARCHIVE_CSV_FILE 2>/dev/null 
 
-if [[ -z $1 ]]
-then
-	dir=./output/$(date +%d-%m-%Y-%H-%M)
-else
-	dir=$1/$(date +%d-%m-%Y-%H-%M)
+if [[ ! -z $1 ]] then
+    mkdir -p $1/$(date +%d-%m-%Y-%H-%M)
+    cp -f watchlist.csv probes.sqlite3 $1
+    cp -f probes.jpg $1/$(date +%d-%m-%Y-%H-%M)
 fi
-
-mkdir -p $dir
-
-cp -f probes.jpg watchlist.csv probes.sqlite3 $dir
 
 exit

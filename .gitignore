@@ -28,3 +28,5 @@ kismet.log
 probes.jpg
 probes_archive.csv
 probes.sqlite3
+watchlist.csv
+probes.sqlite3-journal
