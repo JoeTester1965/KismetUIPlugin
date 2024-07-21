@@ -22,6 +22,6 @@ fi
 
 mkdir -p $dir
 
-cp -f probes.jpg $dir
+cp -f probes.jpg watchlist.csv probes.sqlite3 $dir
 
 exit
