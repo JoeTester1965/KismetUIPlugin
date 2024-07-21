@@ -13,4 +13,15 @@ fi
 
 nohup python3 probe_viewer.py $ARCHIVE_CSV_FILE
 
+if [[ -z $1 ]]
+then
+	dir=./output/$(date +%d-%m-%Y-%H-%M)
+else
+	dir=$1/$(date +%d-%m-%Y-%H-%M)
+fi
+
+mkdir -p $dir
+
+cp -f probes.jpg $dir
+
 exit
