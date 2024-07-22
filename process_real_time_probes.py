@@ -108,7 +108,7 @@ for row in reader:
             logging.info("Hit: %s", ssid_to_message)
             mqtt_client.publish(mqtt_topic, ssid_to_message) 
             now = datetime.datetime.now()
-            csv_entry="%s,%s,\n" % (now.strftime("%Y-%m-%d %H:%M:%S"),ssid_to_message)
+            csv_entry="%s,%s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"),ssid_to_message)
             csv_file.write(csv_entry)
             csv_file.flush()
 
