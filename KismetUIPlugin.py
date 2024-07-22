@@ -53,7 +53,7 @@ epoch = ""
 
 ui_variables = {   
                     'channel' : 'all',
-                    'graph_type' : 'db-device-and-bridge',
+                    'graph_type' : 'all-device-data-and-probes',
                     'rewind_seconds' : 3600,
                     'kismet_credentials' : 'username:password',
                     'kismet_uri' : '192.168.1.50:2501',
@@ -155,7 +155,7 @@ def create_edge_df(graph_type, graphing_channel):
                     if graph_type == 'db-bridge':
                         if device['kismet.device.base.type'] in['Wi-Fi Bridged']:   
                             valid_device = True
-                    if graph_type == 'db-device-and-bridge':
+                    if graph_type == 'db-device-and-bridge' or graph_type == 'all-device-data-and-probes' :
                         if device['kismet.device.base.type'] in['Wi-Fi Device', 'Wi-Fi Device (Inferred)','Wi-Fi WDS Device','Wi-Fi Ad-Hoc', 'Wi-Fi Bridged']:   
                             valid_device = True
 
@@ -252,7 +252,7 @@ def create_edge_df(graph_type, graphing_channel):
             for mac in undirected_probes[ssid]:
                 edge_writer.writerow([ssid,mac,1,1,1])
     
-    if graph_type == 'all_probes':
+    if graph_type == 'all_probes' or graph_type == 'all-device-data-and-probes':
         for ssid in all_probes:
             ssid = filter_non_printable(ssid)
             mac_details_cache[ssid]['node_name'] = ssid
@@ -352,6 +352,7 @@ graph_type_options.append({'label': 'All device data', 'value': 'db-device-and-b
 graph_type_options.append({'label': 'Directed probes', 'value': 'directed_probes'})
 graph_type_options.append({'label': 'Undirected probes', 'value': 'undirected_probes'})
 graph_type_options.append({'label': 'All probes', 'value': 'all_probes'})
+graph_type_options.append({'label': 'All data and probes', 'value': 'all-device-data-and-probes'})
 
 # https://visjs.github.io/vis-network/docs/network/
 network_options = {
