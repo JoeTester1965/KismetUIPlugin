@@ -19,6 +19,9 @@ import requests
 import os
 import logging
 
+def filter_non_printable(str):
+  return ''.join([c for c in str if ord(c) > 31 or ord(c) == 9])
+
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.INFO)
@@ -233,6 +236,7 @@ def create_edge_df(graph_type, graphing_channel):
 
     if graph_type == 'directed_probes':
         for ssid in directed_probes:
+            ssid = filter_non_printable(ssid)
             mac_details_cache[ssid]['node_name'] = ssid
             mac_details_cache[ssid]['node_details'] = ""
             mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
@@ -241,6 +245,7 @@ def create_edge_df(graph_type, graphing_channel):
                 
     if graph_type == 'undirected_probes':
         for ssid in undirected_probes:
+            ssid = filter_non_printable(ssid)
             mac_details_cache[ssid]['node_name'] = ssid
             mac_details_cache[ssid]['node_details'] = ""
             mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
@@ -249,6 +254,7 @@ def create_edge_df(graph_type, graphing_channel):
     
     if graph_type == 'all_probes':
         for ssid in all_probes:
+            ssid = filter_non_printable(ssid)
             mac_details_cache[ssid]['node_name'] = ssid
             mac_details_cache[ssid]['node_details'] = ""
             mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
@@ -272,7 +278,7 @@ def update_graph_data(channel):
     if channel != 'all':
         df = df.loc[df['channel'] == channel, :]
 
-    node_list = list(set(df['from_mac'].unique().tolist() + df['to_mac'].unique().tolist()))
+    node_list = list(set(df['from_mac'].dropna().unique().tolist() + df['to_mac'].dropna().unique().tolist()))
     node_translation_dict={
                                 "Wi-Fi AP":                 ['#000000'],      #black
                                 "Wi-Fi Bridged":            ['#808080'],      #grey
@@ -297,7 +303,7 @@ def update_graph_data(channel):
         node_title = "Nothing to display"
         node_color = '#FF0000' #red
         node_size = 10
-        if node_name != 'Nothing to display':
+        if node_name != 'Nothing to display' :
             node_label_unfiltered = mac_details_cache[node_name]['node_name']
             node_label = node_label_unfiltered.replace(label_to_replace_in_graph,"\n")
             node_title = mac_details_cache[node_name]['node_details'] 
@@ -319,17 +325,19 @@ def update_graph_data(channel):
         else:
             label = ""
         if(total_bytes > 0):
-            edges.append({
-                'id': source + "__" + target,
-                'from': source,
-                'to': target,
-                'value': math.log10(total_bytes),
-                'color': {'color' : '#CCCCCC'},
-                'width': 2,
-                'font': {'size' : 10},
-                'title': label
-            })
-
+            try:
+                edges.append({
+                    'id': source + "__" + target,
+                    'from': source,
+                    'to': target,
+                    'value': math.log10(total_bytes),
+                    'color': {'color' : '#CCCCCC'},
+                    'width': 2,
+                    'font': {'size' : 10},
+                    'title': label
+                })
+            except:
+                pass # very occasionally some rows are nan
     return True
 
 try:
