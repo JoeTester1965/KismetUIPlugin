@@ -9,6 +9,9 @@ import logging
 import sqlite3
 import datetime
 
+def filter_non_printable(str):
+  return ''.join([c for c in str if ord(c) > 31 or ord(c) == 9])
+
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.INFO)
@@ -82,6 +85,7 @@ for row in reader:
     ssid = row[8] 
     #Use this line only if have the latest version of tshark which outputs hex not ascii for wlan.ssid
     ssid = bytes.fromhex(ssid).decode("latin-1")
+    ssid = filter_non_printable(ssid)
     row[8] = ssid  
     
     sqlite_insert_with_param = """INSERT INTO 'probes'

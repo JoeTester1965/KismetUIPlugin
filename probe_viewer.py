@@ -2,11 +2,14 @@ import sys
 import logging
 import datetime
 import logging
-import numpy as np
 import pandas as pd
 from plotnine import *
 from mizani.formatters import date_format
 import os
+import string
+
+def filter_non_printable(str):
+  return ''.join([c for c in str if ord(c) > 31 or ord(c) == 9])
 
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
@@ -30,10 +33,13 @@ probe_df['timestamp'] = probe_df['timestamp'].apply(lambda x: datetime.datetime.
 #Use this line only if have the latest version of tshark which outputs hex not ascii for wlan.ssid
 probe_df['ssid'] = probe_df['ssid'].apply(lambda x: bytes.fromhex(x).decode('latin-1'))
 
+#Have to escape $ for matplotlib
+probe_df['ssid'] = probe_df['ssid'].apply(lambda x: x.replace('$','\$'))
+
+#tshark gving non printable characters sometimes, why they use hex!
+probe_df['ssid'] = probe_df['ssid'].apply(lambda x: filter_non_printable(x))
 
 title = "Probed SSIDs"
-
-graph = ggplot(probe_df) 
 
 graph = ggplot(probe_df, aes(y = 'timestamp', x = 'ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
         ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
