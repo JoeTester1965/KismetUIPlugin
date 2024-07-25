@@ -231,11 +231,11 @@ def create_edge_df(graph_type, graphing_channel):
                             if probing_device == device['kismet.device.base.key']:
                                 client_name_list.append(device['kismet.device.base.macaddr'])
 
-                    client_name_list.sort()    
+                    client_name_list.sort()   
                     all_probes[name]=client_name_list
 
     if graph_type == 'directed_probes':
-        for ssid in directed_probes:
+        for ssid in directed_probes.copy():
             ssid = filter_non_printable(ssid)
             mac_details_cache[ssid]['node_name'] = ssid
             mac_details_cache[ssid]['node_details'] = ""
@@ -244,7 +244,7 @@ def create_edge_df(graph_type, graphing_channel):
                 edge_writer.writerow([ssid,mac,1,1,1])      
                 
     if graph_type == 'undirected_probes':
-        for ssid in undirected_probes:
+        for ssid in undirected_probes.copy():
             ssid = filter_non_printable(ssid)
             mac_details_cache[ssid]['node_name'] = ssid
             mac_details_cache[ssid]['node_details'] = ""
@@ -253,7 +253,7 @@ def create_edge_df(graph_type, graphing_channel):
                 edge_writer.writerow([ssid,mac,1,1,1])
     
     if graph_type == 'all_probes' or graph_type == 'all-device-data-and-probes':
-        for ssid in all_probes:
+        for ssid in all_probes.copy():
             ssid = filter_non_printable(ssid)
             mac_details_cache[ssid]['node_name'] = ssid
             mac_details_cache[ssid]['node_details'] = ""
@@ -450,7 +450,7 @@ def myfun5(n_clicks):
     return dcc.send_file("probes.jpg")
 
 if __name__ == '__main__':
-    create_edge_df('db-device', 'all') # set channel list 
+
     logging.info("Starting UI:")
     
     kismet_login_uri =  "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri']
