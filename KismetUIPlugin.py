@@ -166,8 +166,8 @@ def create_edge_df(graph_type, graphing_channel):
                         if (int(time.time()) - client_map_dict[client_mac]['dot11.client.last_time']) < int(ui_variables['rewind_seconds']):
                             if graphing_channel == 'all':
                                 edge_writer.writerow([device_mac,client_mac,channel,packets,data])
-                                if int(mac_details_cache[device_mac]['channel']) == int(mac_details_cache[client_mac]['channel']):
-                                    channels_with_edges_list.append(int(mac_details_cache[device_mac]['channel']))                     
+                                channels_with_edges_list.append(int(mac_details_cache[device_mac]['channel'])) 
+                                channels_with_edges_list.append(int(mac_details_cache[client_mac]['channel']))                
                             else:
                                 if (int(mac_details_cache[device_mac]['channel']) == graphing_channel) and (int(mac_details_cache[client_mac]['channel']) == graphing_channel): 
                                     edge_writer.writerow([device_mac,client_mac,channel,packets,data])
