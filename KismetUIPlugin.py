@@ -42,38 +42,23 @@ undirected_probes = collections.defaultdict(dict)
 directed_probes = collections.defaultdict(dict)
 all_probes = collections.defaultdict(dict)
 
-channels_with_edges_list = []
-
-channel_options=[]
-channel_options.append({'label': 'all', 'value': 'all'})
-
 tmp_csvfile = "edge_df.csv"
 
 epoch = ""
 
 ui_variables = {   
-                    'channel' : 'all',
-                    'graph_type' : 'db-device-and-bridge',
+                    'graph_type' : 'all-device-data-and-probes',
                     'rewind_seconds' : 60,
                     'kismet_credentials' : 'username:password',
                     'kismet_uri' : '192.168.1.50:2501',
                }
 
-def ieee80211_frequency_to_channel(freq_mhz):
-    if (freq_mhz == 0):
-        return 0
-    if (freq_mhz == 2484):
-        return 14
-    if (freq_mhz < 2484):
-        return ((freq_mhz - 2407) / 5)
-    return (freq_mhz/5 - 1000) 
-
 def pretty_format_hex(a):
     return ':'.join([a[i:i + 2] for i in range(0, len(a), 2)])
 
-def create_edge_df(graph_type, graphing_channel):
+def create_edge_df(graph_type):
 
-    global ui_variables,channels_with_edges_list,channel_options,mac_details_cache,epoch,directed_probes,undirected_probes,all_probes,devices_dict
+    global ui_variables,mac_details_cache,epoch,directed_probes,undirected_probes,all_probes,devices_dict
 
     edge_df_handle = open(tmp_csvfile, 'w', newline='')
     edge_writer = csv.writer(edge_df_handle)
@@ -164,24 +149,9 @@ def create_edge_df(graph_type, graphing_channel):
                         data=mac_details_cache[device_mac]['data']
 
                         if (int(time.time()) - client_map_dict[client_mac]['dot11.client.last_time']) < int(ui_variables['rewind_seconds']):
-                            if graphing_channel == 'all':
-                                edge_writer.writerow([device_mac,client_mac,channel,packets,data])
-                                channels_with_edges_list.append(int(mac_details_cache[device_mac]['channel'])) 
-                                channels_with_edges_list.append(int(mac_details_cache[client_mac]['channel']))                
-                            else:
-                                if (int(mac_details_cache[device_mac]['channel']) == graphing_channel) and (int(mac_details_cache[client_mac]['channel']) == graphing_channel): 
-                                    edge_writer.writerow([device_mac,client_mac,channel,packets,data])
-                                    channels_with_edges_list.append(int(mac_details_cache[device_mac]['channel'])) 
+                            edge_writer.writerow([device_mac,client_mac,channel,packets,data])           
             except:
                 pass
-
-    channels_with_edges_list = list(set(channels_with_edges_list))
-    channels_with_edges_list.sort()
-
-    channel_options.clear()
-    channel_options.append({'label': 'all', 'value': 'all'})
-    for channel in channels_with_edges_list: 
-        channel_options.append({'label': channel, 'value': int(channel)})
 
     kismet_api_uri = "http://" + ui_variables['kismet_credentials'] + "@" + ui_variables['kismet_uri'] + "/phy/phy80211/ssids/views/ssids.prettyjson"
 
@@ -241,7 +211,8 @@ def create_edge_df(graph_type, graphing_channel):
             mac_details_cache[ssid]['node_details'] = ""
             mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
             for mac in directed_probes[ssid]:
-                edge_writer.writerow([ssid,mac,1,1,1])      
+                if (int(time.time()) - mac_details_cache[mac]['last_time']) < int(ui_variables['rewind_seconds']):
+                    edge_writer.writerow([ssid,mac,1,1,1])      
                 
     if graph_type == 'undirected_probes':
         for ssid in undirected_probes.copy():
@@ -250,7 +221,8 @@ def create_edge_df(graph_type, graphing_channel):
             mac_details_cache[ssid]['node_details'] = ""
             mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
             for mac in undirected_probes[ssid]:
-                edge_writer.writerow([ssid,mac,1,1,1])
+                if (int(time.time()) - mac_details_cache[mac]['last_time']) < int(ui_variables['rewind_seconds']):
+                    edge_writer.writerow([ssid,mac,1,1,1])
     
     if graph_type == 'all_probes' or graph_type == 'all-device-data-and-probes':
         for ssid in all_probes.copy():
@@ -259,7 +231,8 @@ def create_edge_df(graph_type, graphing_channel):
             mac_details_cache[ssid]['node_details'] = ""
             mac_details_cache[ssid]['device_type'] = "Wi-Fi AP"
             for mac in all_probes[ssid]:
-                edge_writer.writerow([ssid,mac,1,1,1])
+                if (int(time.time()) - mac_details_cache[mac]['last_time']) < int(ui_variables['rewind_seconds']):
+                    edge_writer.writerow([ssid,mac,1,1,1])
 
     edge_df_handle.flush()
     edge_df_handle.close()
@@ -267,16 +240,13 @@ def create_edge_df(graph_type, graphing_channel):
     logging.info("Kismet DB processed")
     return
 
-def update_graph_data(channel):
+def update_graph_data():
     global nodes,edges,mac_details_cache,epoch
 
     try:
      df = pd.read_csv(tmp_csvfile)
     except:
         return
- 
-    if channel != 'all':
-        df = df.loc[df['channel'] == channel, :]
 
     node_list = list(set(df['from_mac'].dropna().unique().tolist() + df['to_mac'].dropna().unique().tolist()))
     node_translation_dict={
@@ -363,12 +333,7 @@ network_options = {
     'physics'       : {'solver': 'forceAtlas2Based', 'minVelocity': 0.75}
 }
 
-gui = html.Tr([ html.Tr("Channel"),
-                html.Tr(dcc.Dropdown(id = 'channel',
-                     options=[{'label': 'all', 'value': 'all'}],
-                     value=ui_variables['channel'],
-                     clearable=False)),
-                html.Tr("Graph type"),
+gui = html.Tr([ html.Tr("Graph type"),
                 html.Tr(dcc.Dropdown(id = 'graph_type',
                      options=graph_type_options,
                      value=ui_variables['graph_type'],
@@ -392,11 +357,6 @@ gui = html.Tr([ html.Tr("Channel"),
                 html.Tr("Wi-Fi WDS Device", style={'background': '#008080', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Wi-Fi WDS AP", style={'background': '#404040', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Unknown", style={'background': '#800000', 'color': '#FFFFFF', 'font-size': '10px'}),
-                html.Tr([dbc.Button( "Update graph", id="update_graph", n_clicks=0),html.Span(id="button-1", style={"verticalAlign": "middle"}),],),     
-                html.Tr(""),
-                html.Tr(""),
-                html.Tr(""),
-                html.Tr(""),
             ])
 
 network = visdcc.Network(id = 'net', options = network_options)
@@ -407,50 +367,28 @@ table = dbc.Table(table_body)
 app.layout = html.Div([table], style =  {'text-align': 'center'})
 
 @app.callback(
-    Output('channel', 'options'),
-    [State('channel', 'options'), Input('graph_type', 'value'), Input('channel', 'value'), 
-        Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'), Input('rewind_seconds', 'value')])
-def myfun1(existing_options, graph_type, channel, kismet_credentials, kismet_uri, rewind_seconds): 
-
-    global channels_with_edges_list
-
-    existing_options.clear()
-    existing_options.append({'label': 'all', 'value': 'all'})
-    for channel_seen in channels_with_edges_list: 
-        existing_options.append({'label': channel_seen, 'value': int(channel_seen)})
+       Output('net', 'data'),
+        [Input('graph_type', 'value'), Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'), Input('rewind_seconds', 'value')])
+def myfun(graph_type, kismet_credentials, kismet_uri, rewind_seconds):
+    
+    global nodes,edges,ui_variables
 
     ui_variables['graph_type'] = graph_type
-    ui_variables['channel'] = channel
     ui_variables['rewind_seconds'] = rewind_seconds
     ui_variables['kismet_credentials'] = kismet_credentials
     ui_variables['kismet_uri']= kismet_uri
-
-    return existing_options
-
-@app.callback(
-       Output('net', 'data'),
-        [Input('update_graph', 'n_clicks')])
-def myfun3(n_clicks):
-    
-    global nodes,edges,ui_variables
     
     nodes.clear()
     edges.clear()
     mac_details_cache.clear()
-    create_edge_df(ui_variables['graph_type'], ui_variables['channel']) 
-    update_graph_data(ui_variables['channel'])
+    create_edge_df(ui_variables['graph_type']) 
+    update_graph_data()
 
     data = {'nodes':nodes, 'edges':edges} 
+
+
     
     return data
-
-@app.callback(
-    Output('download-jpg', 'data'),
-    [Input('stats_jpg', 'n_clicks')],
-    prevent_initial_call=True)
-def myfun5(n_clicks):
-      
-    return dcc.send_file("probes.jpg")
 
 if __name__ == '__main__':
 
