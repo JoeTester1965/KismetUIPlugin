@@ -53,8 +53,8 @@ epoch = ""
 
 ui_variables = {   
                     'channel' : 'all',
-                    'graph_type' : 'all-device-data-and-probes',
-                    'rewind_seconds' : 3600,
+                    'graph_type' : 'db-device-and-bridge',
+                    'rewind_seconds' : 60,
                     'kismet_credentials' : 'username:password',
                     'kismet_uri' : '192.168.1.50:2501',
                }
@@ -346,13 +346,13 @@ except:
     pass
 
 graph_type_options=[]
+graph_type_options.append({'label': 'All data and probes', 'value': 'all-device-data-and-probes'})
 graph_type_options.append({'label': 'Client device data', 'value': 'db-device'})
 graph_type_options.append({'label': 'Bridged device data', 'value': 'db-bridge'})
 graph_type_options.append({'label': 'All device data', 'value': 'db-device-and-bridge'})
 graph_type_options.append({'label': 'Directed probes', 'value': 'directed_probes'})
 graph_type_options.append({'label': 'Undirected probes', 'value': 'undirected_probes'})
 graph_type_options.append({'label': 'All probes', 'value': 'all_probes'})
-graph_type_options.append({'label': 'All data and probes', 'value': 'all-device-data-and-probes'})
 
 # https://visjs.github.io/vis-network/docs/network/
 network_options = {
@@ -373,8 +373,13 @@ gui = html.Tr([ html.Tr("Channel"),
                      options=graph_type_options,
                      value=ui_variables['graph_type'],
                      clearable=False)), 
-                html.Tr("Uptime rewind seconds"),
-                html.Tr(dcc.Input(id = 'rewind_seconds',value = ui_variables['rewind_seconds'], style={'textAlign': 'center'})), 
+                html.Tr("For past"),
+                html.Tr(dcc.Dropdown(id = 'rewind_seconds',
+                     options=[{'label': 'minute', 'value': 60},
+                              {'label': 'hour', 'value': 60*60},
+                              {'label': 'day', 'value': 60*60*24}],
+                     value=ui_variables['rewind_seconds'],
+                     clearable=False)),
                 html.Tr("Kismet credentials"),
                 html.Tr(dcc.Input(id = 'kismet_credentials', value = ui_variables['kismet_credentials'], type="password", style={'textAlign': 'center'})),
                 html.Tr("Kismet URI"),
@@ -392,8 +397,6 @@ gui = html.Tr([ html.Tr("Channel"),
                 html.Tr(""),
                 html.Tr(""),
                 html.Tr(""),
-                html.Tr([dbc.Button( "Probe archive graph", id="stats_jpg", n_clicks=0, download="probes.jpg", external_link=True,),html.Span(id="button-3", style={"verticalAlign": "middle",}),],),
-                dcc.Download(id="download-jpg"),
             ])
 
 network = visdcc.Network(id = 'net', options = network_options)
