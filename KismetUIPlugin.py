@@ -360,7 +360,7 @@ gui = html.Tr([ html.Tr("Graph type"),
                 html.Tr([dbc.Button( "Update", id="update_graph", n_clicks=0),html.Span(id="button-1", style={"verticalAlign": "middle"}),],),     
             ])
 
-network = visdcc.Network(id = 'net', options = network_options, data = {'nodes': [{'label': '... updating ...'}], 'edges': [{}]})
+network = visdcc.Network(id = 'net', options = network_options, data = {'nodes': [{}], 'edges': [{}]})
 row1 = html.Tr([html.Td(gui), html.Td(network)])
 table_body = [html.Tbody([row1])]
 table = dbc.Table(table_body)
