@@ -357,9 +357,10 @@ gui = html.Tr([ html.Tr("Graph type"),
                 html.Tr("Wi-Fi WDS Device", style={'background': '#008080', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Wi-Fi WDS AP", style={'background': '#404040', 'color': '#FFFFFF', 'font-size': '10px'}),
                 html.Tr("Unknown", style={'background': '#800000', 'color': '#FFFFFF', 'font-size': '10px'}),
+                html.Tr([dbc.Button( "Update", id="update_graph", n_clicks=0),html.Span(id="button-1", style={"verticalAlign": "middle"}),],),     
             ])
 
-network = visdcc.Network(id = 'net', options = network_options)
+network = visdcc.Network(id = 'net', options = network_options, data = {'nodes': [{'label': '... updating ...'}], 'edges': [{}]})
 row1 = html.Tr([html.Td(gui), html.Td(network)])
 table_body = [html.Tbody([row1])]
 table = dbc.Table(table_body)
@@ -368,8 +369,10 @@ app.layout = html.Div([table], style =  {'text-align': 'center'})
 
 @app.callback(
        Output('net', 'data'),
-        [Input('graph_type', 'value'), Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'), Input('rewind_seconds', 'value')])
-def myfun(graph_type, kismet_credentials, kismet_uri, rewind_seconds):
+        [Input('update_graph', 'n_clicks'), Input('graph_type', 'value'), Input('kismet_credentials', 'value'), Input('kismet_uri', 'value'), Input('rewind_seconds', 'value')])
+def myfun(n_clicks, graph_type, kismet_credentials, kismet_uri, rewind_seconds):
+
+    logging.info("CALLBACK'")
     
     global nodes,edges,ui_variables
 
@@ -386,8 +389,6 @@ def myfun(graph_type, kismet_credentials, kismet_uri, rewind_seconds):
 
     data = {'nodes':nodes, 'edges':edges} 
 
-
-    
     return data
 
 if __name__ == '__main__':
