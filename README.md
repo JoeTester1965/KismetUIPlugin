@@ -86,7 +86,17 @@ You can interact with the menu as follows:
 
 You can get MQTT alerts when a probe comes in based on what is in what is in [process_real_time_probes.example.cfg](process_real_time_probes.example.cfg).
 
-This will only work if tshark is configured for non root users (default). Otherwise use 'sudo dpkg-reconfigure wireshark-common' and edit monitor interface for tshark as used by kismet. 
+This will only work if tshark is configured for non root users (default). 
+
+Otherwise use this and allow non-superusers to captur packets. 
+```
+sudo dpkg-reconfigure wireshark-common
+```
+
+Then do this to add your user to the worshar group, you may need to log out and in again for this to take effect.
+```
+sudo usermod -aG wireshark pi
+```
 
 # Automated periodic probed ssid visualisation 
 

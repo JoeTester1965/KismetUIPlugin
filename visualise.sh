@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ARCHIVE_CSV_FILE="probes_archive.csv"
+CSV_FILE="probes.csv"
 
 VIRTUAL_ENV=$PWD/venv/bin/activate
 
@@ -18,7 +18,7 @@ else
 	dir=$1
 fi
 
-nohup python3 probe_viewer.py $ARCHIVE_CSV_FILE 2>/dev/null 
+nohup python3 probe_viewer.py $CSV_FILE 2>/dev/null 
 
 cp -f watchlist.csv probes.sqlite3 $dir
 cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes.jpg
