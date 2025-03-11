@@ -18,7 +18,6 @@ Pretty useful graphs for [Kismet](https://github.com/kismetwireless/kismet) like
 Install [Kismet](https://www.kismetwireless.net/) then:
 
 ``` console
-
 chmod u+x start.sh
 
 chmod u+x stop.sh
@@ -30,8 +29,6 @@ python3 -m venv venv
 source venv/bin/activate
 
 pip3 install -r requirements.txt
-
-
 ```
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
@@ -43,7 +40,21 @@ By default this visualisation server runs on port 8050, change the line at the b
 ./start.sh
 ./stop.sh
 ```
-Put something like [this](crontab) in your crontab file to autostart on boot then also restart every 24 hours and manage database growth.
+
+For kismet configuration usually best to use [kismet_site.conf](https://www.kismetwireless.net/docs/readme/configuring/configfiles/). 
+
+For example to set capture card to wlan0 and disable all packet logging:
+
+```
+sudo touch /etc/kismet/kismet_site.conf
+```
+
+Then edit that file as root to contain:
+
+```
+source=wlan0
+kis_log_packets=false
+```
 
 # User interface
 
@@ -67,15 +78,25 @@ You can interact with the menu as follows:
 ```Refresh``` | Refresh the graph based on what you have
 ```Reset``` | Reset the graph back to defaults
 
-# Brucie Bonus, real time Probe alerts and better visibility
+# Real time Probe alerts
 
-You can also get MQTT alerts when a probe comes in based on what is in what is in [process_real_time_probes.example.cfg](process_real_time_probes.example.cfg).
+You can get MQTT alerts when a probe comes in based on what is in what is in [process_real_time_probes.example.cfg](process_real_time_probes.example.cfg).
 
-Also The 'Probes as CSV' button on the UI can be used to dowload a file like below (this is only created when you run start.sh, i.e. for your last capture session).
+This will only work if tshark is configured for non root users (default). Otherwise use 'sudo dpkg-reconfigure wireshark-common' and edit monitor interface for tshark as used by kismet. 
 
-This will only work if tshark is configured for non root users. Use 'sudo dpkg-reconfigure wireshark-common' if needed and edit monitor interface for tshark as used by kismet. 
+# Automated periodic probed ssid visualisation 
 
 <img src="./example-probes.jpg">
+
+Put something like [this](crontab) in your crontab file to update visualisation images say every 24 hours. You will need to create your share directory, for example on debian:
+
+```
+sudo apt-get install samba
+sudo apt-get install samba-common-bin
+mkdir /home/pi/Documents/Share
+```
+
+Then follow the instructions [here](https://daedtech.com/create-a-windows-share-on-your-raspberry-pi/) or wherever needed to get your share up and running.
 
 Enjoy
 
