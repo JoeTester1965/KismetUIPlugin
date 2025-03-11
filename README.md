@@ -18,13 +18,20 @@ Pretty useful graphs for [Kismet](https://github.com/kismetwireless/kismet) like
 Install [Kismet](https://www.kismetwireless.net/) then:
 
 ``` console
-sudo apt-get install python3-pandas python3-pandas-lib libopenblas-dev tshark
-
-pip3 install -r requirements.txt
 
 chmod u+x start.sh
 
 chmod u+x stop.sh
+
+sudo apt-get install python3-pandas python3-pandas-lib libopenblas-dev tshark
+
+python3 -m venv venv
+
+source venv/bin/activate
+
+pip3 install -r requirements.txt
+
+
 ```
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
