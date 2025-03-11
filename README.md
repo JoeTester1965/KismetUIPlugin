@@ -34,7 +34,11 @@ By default this visualisation server runs on port 8050, change the line at the b
 
 # Using
 
-**Important:** Edit /etc/kismet/kismet.conf and [start.sh](start.sh) to meet your interface needs then:
+**Important:** Edit /etc/kismet/kismet.conf to meet your interface needs.
+
+**Important:** Then edit the bottom line of and [start.sh](start.sh) to capture probes if needed on your prmoiscous wlan interface/s. Default is *wlan0mon*.
+
+Then:
 
 ``` console
 ./start.sh
