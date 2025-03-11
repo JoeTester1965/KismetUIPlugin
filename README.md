@@ -88,15 +88,7 @@ This will only work if tshark is configured for non root users (default). Otherw
 
 <img src="./example-probes.jpg">
 
-Put something like [this](crontab) in your crontab file to update visualisation images say every 24 hours. You will need to create your share directory, for example on debian:
-
-```
-sudo apt-get install samba
-sudo apt-get install samba-common-bin
-mkdir /home/pi/Documents/Share
-```
-
-Then follow the instructions [here](https://daedtech.com/create-a-windows-share-on-your-raspberry-pi/) or wherever needed to get your share up and running.
+Put something like [this](crontab) in your crontab file to update visualisation images say every 24 hours but changing */home/pi/Documents/Share/wifi* to what works for you.
 
 Enjoy
 
