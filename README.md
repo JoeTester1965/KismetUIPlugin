@@ -29,6 +29,8 @@ python3 -m venv venv
 source venv/bin/activate
 
 pip3 install -r requirements.txt
+
+deactivate
 ```
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
