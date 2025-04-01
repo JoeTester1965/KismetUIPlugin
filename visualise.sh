@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CSV_FILE="probes.csv"
+CSV_FILE=$1
 
 VIRTUAL_ENV_DIR=$PWD/venv
 
@@ -12,7 +12,7 @@ else
     exit
 fi
 
-if [[ -z $1 ]]
+if [[ -z $2 ]]
 then
 	dir=.
 else
