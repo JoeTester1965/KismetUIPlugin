@@ -16,7 +16,7 @@ if [[ -z $2 ]]
 then
 	dir=.
 else
-	dir=$1
+	dir=$2
 fi
 
 nohup python3 probe_viewer.py $CSV_FILE 2>/dev/null 

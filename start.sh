@@ -10,15 +10,10 @@ else
 fi
 
 CSV_FILE="probes.csv"
-ARCHIVE_CSV_FILE="probes_archive.csv"
 CONFIG_FILE="process_real_time_probes.cfg"  
+
 nohup bash ./stop.sh &> /dev/null
 
-if [ -s $CSV_FILE ]; then
-	nohup mv $CSV_FILE $ARCHIVE_CSV_FILE &> /dev/null
-else
-    nohup touch $CSV_FILE &> /dev/null
-fi
 nohup python3 process_real_time_probes.py $CONFIG_FILE $CSV_FILE 2>/dev/null &
 
 nohup kismet &> kismet.log & 
