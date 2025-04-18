@@ -19,7 +19,14 @@ else
 	dir=$1
 fi
 
-nohup python3 probe_viewer.py $CSV_FILE 2>/dev/null 
+if [[ -z $2 ]]
+then
+	TIME_INTERVAL="24h"
+else
+	TIME_INTERVAL=$2
+fi
+
+nohup python3 probe_viewer.py $CSV_FILE $TIME_INTERVAL $ 2>/dev/null 
 
 cp -f watchlist.csv probes.sqlite3 $dir
 cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes.jpg

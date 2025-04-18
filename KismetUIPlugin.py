@@ -50,7 +50,7 @@ ui_variables = {
                     'graph_type' : 'all-device-data-and-probes',
                     'rewind_seconds' : 60,
                     'kismet_credentials' : 'username:password',
-                    'kismet_uri' : '192.168.1.50:2501',
+                    'kismet_uri' : '192.168.1.67:2501',
                }
 
 def pretty_format_hex(a):
