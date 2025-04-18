@@ -417,4 +417,4 @@ if __name__ == '__main__':
         except:
            logging.warn("No epoch received, check Kismet server and your API URI and credentials") 
     
-    app.run_server(port=8050,host='0.0.0.0',debug=False)
+    app.run(port=8050,host='0.0.0.0',debug=False)

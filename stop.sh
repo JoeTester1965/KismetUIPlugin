@@ -5,9 +5,6 @@ nohup pkill -f kismet &> /dev/null
 nohup pkill -f KismetUIPlugin.py &> /dev/null
 nohup pkill -f process_real_time_probes.py &> /dev/null
 nohup pkill -f probe_viewer.py &> /dev/null
-nohup rm *.kismet &> /dev/null
-nohup rm *.kismet-journal &> /dev/null
-nohup rm *.log &> /dev/null
 nohup rm edge_df.csv &> /dev/null
 nohup rm nohup.out &> /dev/null
 nohup pkill -f tshark &> /dev/null

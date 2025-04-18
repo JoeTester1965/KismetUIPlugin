@@ -1,5 +1,4 @@
 @reboot sleep 300 && cd /home/pi/Documents/KismetUIPlugin && ./start.sh
 0 0 * * * cd /home/pi/Documents/KismetUIPlugin && ./visualise.sh /home/pi/Documents/Share/wifi 24h
-# use below if database gets too large and kismet ui crawls after a few days
-#5 0 * * * cd /home/pi/Documents/KismetUIPlugin && ./start.sh
-
+#use below if want to reset probes seen today
+#10 0 * * * cd /home/pi/Documents/KismetUIPlugin && ./start.sh
