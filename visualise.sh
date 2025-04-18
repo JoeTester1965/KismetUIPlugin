@@ -19,7 +19,7 @@ else
 	dir=$2
 fi
 
-if [[ -z $2 ]]
+if [[ -z $3 ]]
 then
 	TIME_INTERVAL="24h"
 else
