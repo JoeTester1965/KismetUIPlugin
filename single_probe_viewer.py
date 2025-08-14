@@ -28,6 +28,8 @@ probe_df = pd.read_csv(csvfile).dropna()
 
 probe_df = pd.read_csv(csvfile, usecols=[0,6,7,8], names=['timestamp', 'channel', 'signal_dbm', 'ssid'])
 
+probe_df = probe_df.dropna()
+
 probe_df['timestamp'] = probe_df['timestamp'].apply(lambda x: datetime.datetime.fromtimestamp(x))
 
 #Use this line only if have the latest version of tshark which outputs hex not ascii for wlan.ssid
