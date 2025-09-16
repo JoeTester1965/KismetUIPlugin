@@ -6,7 +6,6 @@ import configparser
 import ast
 import paho.mqtt.client as mqtt
 import logging
-import sqlite3
 import datetime
 
 def filter_non_printable(str):
@@ -67,18 +66,6 @@ if config.has_section("mqtt"):
         logging.warning("Cannot connect to MQTT check config file and server")
     mqtt_client.loop_start()
 
-db = sqlite3.connect('probes.sqlite3')
-db.execute('CREATE TABLE IF NOT EXISTS probes ( time_epoch TIMESTAMP,       \
-                                                ta TEXT NOT NULL,           \
-                                                ra TEXT NOT NULL,           \
-                                                sa TEXT NOT NULL,           \
-                                                da TEXT NOT NULL,           \
-                                                len INTEGER NOT NULL,       \
-                                                channel INTEGER NOT NULL,   \
-                                                dbm INTEGER NOT NULL,       \
-                                                ssid TEXT NOT NULL)')
-
-cursor = db.cursor()
 reader = csv.reader(rolling_reader(sys.argv[2]))
 for row in reader:
 
@@ -87,13 +74,6 @@ for row in reader:
     ssid = bytes.fromhex(ssid).decode("latin-1")
     ssid = filter_non_printable(ssid)
     row[8] = ssid  
-    
-    sqlite_insert_with_param = """INSERT INTO 'probes'
-                          ('time_epoch', 'ta', 'ra', 'sa', 'da', 'len', 'channel', 'dbm', 'ssid' ) 
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-
-    cursor.execute(sqlite_insert_with_param, row)
-    db.commit()
  
     ssid_to_message=None
     if len(ssid_whitelist) > 0:
@@ -111,5 +91,3 @@ for row in reader:
             csv_entry="%s,%s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"),ssid_to_message)
             csv_file.write(csv_entry)
             csv_file.flush()
-
-db.close()
