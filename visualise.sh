@@ -28,7 +28,7 @@ fi
 
 nohup python3 probe_viewer.py $CSV_FILE $TIME_INTERVAL > probe_viewer.log 2>&1
 
-cp -f watchlist.csv probes.sqlite3 $dir
+cp -f watchlist.csv $dir
 cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes.jpg
 
 exit
