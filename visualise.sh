@@ -29,7 +29,8 @@ fi
 nohup python3 probe_viewer.py $CSV_FILE $TIME_INTERVAL > probe_viewer.log 2>&1
 
 cp -f watchlist.csv $dir
+cp -f process_real_time_probes.cfg $dir
 cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes.jpg
-cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes.jpg
-mv -f probes.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes.csv
+cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes-raw.jpg
+cp -f probes.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes.csv
 exit
