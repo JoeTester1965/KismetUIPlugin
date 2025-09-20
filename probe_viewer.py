@@ -36,18 +36,25 @@ probe_df['publishedAt'] = pd.to_datetime(probe_df['timestamp'])
 probe_df = probe_df.set_index(['publishedAt'])
 probe_df = probe_df.last(sys.argv[2])
 
-#Use this line only if have the latest version of tshark which outputs hex not ascii for wlan.ssid
-probe_df['ssid'] = probe_df['ssid'].apply(lambda x: bytes.fromhex(x).decode('latin-1'))
+probe_df['printable_ssid'] = probe_df['ssid'].apply(lambda x: bytes.fromhex(x).decode('latin-1'))
+probe_df['printable_ssid'] = probe_df['printable_ssid'].apply(lambda x: x.replace('$','\$'))
+probe_df['printable_ssid'] = probe_df['printable_ssid'].apply(lambda x: filter_non_printable(x))
 
-#Have to escape $ for matplotlib
-probe_df['ssid'] = probe_df['ssid'].apply(lambda x: x.replace('$','\$'))
-
-#tshark gving non printable characters sometimes, why they use hex!
-probe_df['ssid'] = probe_df['ssid'].apply(lambda x: filter_non_printable(x))
-
-title = "Probed SSIDs"
+title = "Probed SSIDs in a hex format"
 
 graph = ggplot(probe_df, aes(y = 'timestamp', x = 'ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
+        ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
+        scale_y_datetime(date_breaks = "1 hour", labels = date_format("%H")) + \
+        theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 8)) + \
+        ggtitle(title)
+
+plot_filename = os.getcwd() + '/probes-raw.jpg'
+logging.info("Saving %s", plot_filename)
+graph.save(filename = plot_filename, dpi = 600)
+
+title = "Probed SSIDs in a printable format"
+
+graph = ggplot(probe_df, aes(y = 'timestamp', x = 'printable_ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
         ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
         scale_y_datetime(date_breaks = "1 hour", labels = date_format("%H")) + \
         theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 8)) + \

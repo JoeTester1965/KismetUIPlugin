@@ -43,15 +43,10 @@ if len(sys.argv) != 3:
 config = configparser.ConfigParser()
 config.read(sys.argv[1])
 
-if config.has_option("probes", "ssid_blacklist"):
-    ssid_blacklist = ast.literal_eval(config.get("probes", "ssid_blacklist"))
+if config.has_option("probes", "ssid_watchlist"):
+    ssid_watchlist = ast.literal_eval(config.get("probes", "ssid_watchlist"))
 else:
-    ssid_blacklist = ""
-
-if config.has_option("probes", "ssid_whitelist"):
-    ssid_whitelist = ast.literal_eval(config.get("probes", "ssid_whitelist")) 
-else:
-    ssid_whitelist = ""
+    ssid_watchlist = ""
 
 if config.has_section("mqtt"):
     mqtt_ip_address = config["mqtt"]["mqtt_ip_address"] 
@@ -69,25 +64,25 @@ if config.has_section("mqtt"):
 reader = csv.reader(rolling_reader(sys.argv[2]))
 for row in reader:
 
-    ssid = row[8] 
-    #Use this line only if have the latest version of tshark which outputs hex not ascii for wlan.ssid
-    ssid = bytes.fromhex(ssid).decode("latin-1")
-    ssid = filter_non_printable(ssid)
-    row[8] = ssid  
+    raw_ssid = row[8] # ssid in raw format
+    printable_ssid = bytes.fromhex(raw_ssid).decode("latin-1")
+    printable_ssid = filter_non_printable(printable_ssid)
  
     ssid_to_message=None
-    if len(ssid_whitelist) > 0:
-        if ssid in ssid_whitelist:
-            ssid_to_message = ssid
-    else: 
-        if ssid not in ssid_blacklist:
-            if config.has_section("mqtt"):
-                ssid_to_message = ssid
-    if config.has_section("mqtt"):
-        if ssid_to_message:
-            logging.info("Hit: %s", ssid_to_message)
-            mqtt_client.publish(mqtt_topic, ssid_to_message) 
-            now = datetime.datetime.now()
-            csv_entry="%s,%s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"),ssid_to_message)
-            csv_file.write(csv_entry)
-            csv_file.flush()
+
+    if len(ssid_watchlist) > 0:
+        if raw_ssid in ssid_watchlist:
+            ssid_to_message = raw_ssid
+    
+    if len(ssid_watchlist) > 0:
+        if printable_ssid in ssid_watchlist:
+            ssid_to_message = printable_ssid
+
+    if ssid_to_message:
+        logging.info("%s", ssid_to_message)
+        now = datetime.datetime.now()
+        csv_entry="%s,%s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"),ssid_to_message)
+        csv_file.write(csv_entry)
+        csv_file.flush()
+        if config.has_section("mqtt"):    
+            mqtt_client.publish(mqtt_topic, ssid_to_message)
