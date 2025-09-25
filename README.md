@@ -56,9 +56,17 @@ By default this visualisation server runs on port 8050, change the line at the b
 **Important:** Created and/or edit /etc/kismet/kismet_site.conf to meet your interface needs e.g.
 
 ``` console
-source=wlan1
+source=wlan0
 kis_log_packets=true
-log_prefix=/media/usb1
+logging_enabled=false
+enable_logging=false
+log_prefix=/tmp
+kis_log_alert_timeout=86400
+kis_log_device_timeout=86400
+kis_log_message_timeout=86400
+kis_log_packet_timeout=86400
+kis_log_snapshot_timeout=86400
+
 ```
 
 
