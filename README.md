@@ -30,6 +30,8 @@ chmod u+x start.sh
 
 chmod u+x stop.sh
 
+chmod u+x restart_tshark.sh
+
 sudo apt-get install python3-pandas python3-pandas-lib libopenblas-dev tshark
 
 sudo usermod -aG kismet your-user-here
