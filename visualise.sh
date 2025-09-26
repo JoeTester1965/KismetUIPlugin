@@ -19,7 +19,7 @@ else
 	dir=$1
 fi
 
-if [[ -z $2 ]]
+if [[ -z $2 ]]``
 then
 	TIME_INTERVAL="24h"
 else
@@ -28,7 +28,6 @@ fi
 
 nohup python3 probe_viewer.py $CSV_FILE $TIME_INTERVAL > probe_viewer.log 2>&1
 
-cp -f watchlist.csv $dir
 cp -f process_real_time_probes.cfg $dir
 cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes.jpg
 cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes-raw.jpg
