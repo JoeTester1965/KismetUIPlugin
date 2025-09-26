@@ -6,7 +6,6 @@ import configparser
 import ast
 import paho.mqtt.client as mqtt
 import logging
-import datetime
 
 def filter_non_printable(str):
   return ''.join([c for c in str if ord(c) > 31 or ord(c) == 9])
@@ -14,9 +13,6 @@ def filter_non_printable(str):
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.INFO)
-
-csv_file = open("watchlist.csv", 'a')
-csv_file.flush()
   
 def rolling_reader(filename, poll_period=.1, encoding="utf-8"):
     pos = 0
@@ -80,9 +76,5 @@ for row in reader:
 
     if ssid_to_message:
         logging.info("%s", ssid_to_message)
-        now = datetime.datetime.now()
-        csv_entry="%s,%s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"),ssid_to_message)
-        csv_file.write(csv_entry)
-        csv_file.flush()
         if config.has_section("mqtt"):    
             mqtt_client.publish(mqtt_topic, ssid_to_message)

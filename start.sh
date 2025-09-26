@@ -17,9 +17,3 @@ nohup python3 process_real_time_probes.py $CONFIG_FILE $CSV_FILE 2>/dev/null &
 
 nohup kismet &> kismet.log & 
 nohup python3 KismetUIPlugin.py &>KismetUIPlugin.log &
-
-sleep 1.0s
-
-#tshark must be configured for non root users, use 'sudo dpkg-reconfigure wireshark-common' if needed then 'sudo usermod -aG wireshark myusername' then use monitor interface address as produced by kismet 
-#
-bash ./restart_tshark.sh
