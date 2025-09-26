@@ -19,7 +19,7 @@ else
 	dir=$1
 fi
 
-if [[ -z $2 ]]``
+if [[ -z $2 ]]
 then
 	TIME_INTERVAL="24h"
 else
@@ -32,4 +32,5 @@ cp -f process_real_time_probes.cfg $dir
 cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes.jpg
 cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes-raw.jpg
 cp -f probes.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes.csv
+cp -f probes_df.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes_df.csv
 exit

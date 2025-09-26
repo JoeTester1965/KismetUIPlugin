@@ -32,13 +32,17 @@ probe_df = probe_df.dropna()
 
 probe_df['timestamp'] = probe_df['timestamp'].apply(lambda x: datetime.datetime.fromtimestamp(x))
 
-probe_df['publishedAt'] = pd.to_datetime(probe_df['timestamp'])
-probe_df = probe_df.set_index(['publishedAt'])
-probe_df = probe_df.last(sys.argv[2])
-
 probe_df['printable_ssid'] = probe_df['ssid'].apply(lambda x: bytes.fromhex(x).decode('latin-1'))
 probe_df['printable_ssid'] = probe_df['printable_ssid'].apply(lambda x: x.replace('$','\$'))
 probe_df['printable_ssid'] = probe_df['printable_ssid'].apply(lambda x: filter_non_printable(x))
+
+map_filename = os.getcwd() + '/probes_map.csv'
+probes_printable = probe_df[['printable_ssid', 'ssid']].drop_duplicates(ignore_index=True)
+probes_printable.to_csv(map_filename, header=False)
+
+probe_df['publishedAt'] = pd.to_datetime(probe_df['timestamp'])
+probe_df = probe_df.set_index(['publishedAt'])
+probe_df = probe_df.last(sys.argv[2])
 
 title = "Probed SSIDs in a hex format"
 
@@ -63,7 +67,6 @@ graph = ggplot(probe_df, aes(y = 'timestamp', x = 'printable_ssid')) + geom_poin
 plot_filename = os.getcwd() + '/probes.jpg'
 logging.info("Saving %s", plot_filename)
 graph.save(filename = plot_filename, dpi = 600)
-
 
 
 
