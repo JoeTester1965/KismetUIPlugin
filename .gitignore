@@ -33,3 +33,6 @@ probes.sqlite3-journal
 probe_viewer.log
 first-wifi.jpg
 probes-raw.jpg
+probes_df.csv
+probes_map.csv
+probes_printable.csv

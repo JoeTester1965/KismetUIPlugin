@@ -36,10 +36,6 @@ probe_df['printable_ssid'] = probe_df['ssid'].apply(lambda x: bytes.fromhex(x).d
 probe_df['printable_ssid'] = probe_df['printable_ssid'].apply(lambda x: x.replace('$','\$'))
 probe_df['printable_ssid'] = probe_df['printable_ssid'].apply(lambda x: filter_non_printable(x))
 
-map_filename = os.getcwd() + '/probes_map.csv'
-probes_printable = probe_df[['printable_ssid', 'ssid']].drop_duplicates(ignore_index=True)
-probes_printable.to_csv(map_filename, header=False)
-
 probe_df['publishedAt'] = pd.to_datetime(probe_df['timestamp'])
 probe_df = probe_df.set_index(['publishedAt'])
 probe_df = probe_df.last(sys.argv[2])
@@ -59,7 +55,7 @@ graph.save(filename = plot_filename, dpi = 600)
 title = "Probed SSIDs in a printable format"
 
 graph = ggplot(probe_df, aes(y = 'timestamp', x = 'printable_ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
-        ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
+       ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
         scale_y_datetime(date_breaks = "1 hour", labels = date_format("%H")) + \
         theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 8)) + \
         ggtitle(title)
@@ -67,6 +63,10 @@ graph = ggplot(probe_df, aes(y = 'timestamp', x = 'printable_ssid')) + geom_poin
 plot_filename = os.getcwd() + '/probes.jpg'
 logging.info("Saving %s", plot_filename)
 graph.save(filename = plot_filename, dpi = 600)
+
+map_filename = os.getcwd() + '/probes_printable.csv'
+probes_printable = probe_df[['printable_ssid', 'ssid']]
+probes_printable.to_csv(map_filename, header=False)
 
 
 
