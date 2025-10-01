@@ -1,7 +1,5 @@
 #!/bin/bash
 
-CSV_FILE=probes.csv
-
 VIRTUAL_ENV_DIR=$PWD/venv
 
 #Use a python virtual env if needed
@@ -26,10 +24,18 @@ else
 	TIME_INTERVAL=$2
 fi
 
-nohup python3 probe_viewer.py $CSV_FILE $TIME_INTERVAL > probe_viewer.log 2>&1
-
 cp -f process_real_time_probes.cfg $dir
-cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes.jpg
-cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes-raw.jpg
-cp -f probes_printable.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes_printable.csv
+
+nohup python3 probe_viewer.py probes_0.csv $TIME_INTERVAL > probe_viewer_0.log 2>&1
+
+cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes_0.jpg
+cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes-raw_0.jpg
+cp -f probes_printable.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes_printable_0.csv
+
+nohup python3 probe_viewer.py probes_1.csv $TIME_INTERVAL > probe_viewer_0.log 2>&1
+
+cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes_1.jpg
+cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes-raw_1.jpg
+cp -f probes_printable.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes_printable_1.csv
+
 exit
