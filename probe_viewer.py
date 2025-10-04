@@ -26,7 +26,7 @@ logging.info("Processing %s", csvfile)
 
 probe_df = pd.read_csv(csvfile).dropna()
 
-probe_df = pd.read_csv(csvfile, usecols=[0,6,7,8], names=['timestamp', 'channel', 'signal_dbm', 'ssid'])
+probe_df = pd.read_csv(csvfile, usecols=[0,6,7,8,9], names=['timestamp', 'channel', 'signal_dbm', 'ssid', 'collector'])
 
 probe_df = probe_df.dropna()
 
@@ -39,6 +39,7 @@ probe_df['printable_ssid'] = probe_df['printable_ssid'].apply(lambda x: filter_n
 probe_df['publishedAt'] = pd.to_datetime(probe_df['timestamp'])
 probe_df = probe_df.set_index(['publishedAt'])
 probe_df = probe_df.last(sys.argv[2])
+probe_df = probe_df.sort_index()
 
 title = "Probed SSIDs in a hex format"
 
@@ -64,8 +65,8 @@ plot_filename = os.getcwd() + '/probes.jpg'
 logging.info("Saving %s", plot_filename)
 graph.save(filename = plot_filename, dpi = 600)
 
-map_filename = os.getcwd() + '/probes_printable.csv'
-probes_printable = probe_df[['printable_ssid', 'ssid']]
+map_filename = os.getcwd() + '/probes_sorted.csv'
+probes_printable = probe_df[['printable_ssid', 'ssid', 'channel','signal_dbm', 'collector']]
 probes_printable.to_csv(map_filename, header=False)
 
 

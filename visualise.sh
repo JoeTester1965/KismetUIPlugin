@@ -26,16 +26,16 @@ fi
 
 cp -f process_real_time_probes.cfg $dir
 
-nohup python3 probe_viewer.py probes_0.csv $TIME_INTERVAL > probe_viewer_0.log 2>&1
+sed "s|$|,0|" probes_0.csv > probes_0_temp.csv
+sed "s|$|,1|" probes_1.csv > probes_1_temp.csv
 
-cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes_0.jpg
-cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes-raw_0.jpg
-cp -f probes_printable.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes_printable_0.csv
+cat probes_0_temp.csv probes_1_temp.csv > probes.csv
 
-nohup python3 probe_viewer.py probes_1.csv $TIME_INTERVAL > probe_viewer_0.log 2>&1
+nohup python3 probe_viewer.py probes.csv $TIME_INTERVAL > probe_viewer.log 2>&1
 
-cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes_1.jpg
-cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes-raw_1.jpg
-cp -f probes_printable.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes_printable_1.csv
+cp -f probes.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes.jpg
+cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y-%H-%M)-probes-hex.jpg
+cp -f probes_sorted.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes.csv
+
 
 exit
