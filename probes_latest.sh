@@ -33,6 +33,6 @@ cat probes_0_temp.csv probes_1_temp.csv > probes.csv
 
 nohup python3 probes_latest.py probes.csv $TIME_INTERVAL_MINTES > probe_viewer.log 2>&1
 
-cp -f probes_latest.csv $dir/$(date +%d-%m-%Y-%H-%M)-probes_latest.csv
+cp -f probes_latest.csv $dir/probes_latest.csv
 
 exit
