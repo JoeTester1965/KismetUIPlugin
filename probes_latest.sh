@@ -24,8 +24,6 @@ else
 	TIME_INTERVAL_MINTES=$2
 fi
 
-cp -f process_real_time_probes.cfg $dir
-
 sed "s|$|,0|" probes_0.csv > probes_0_temp.csv
 sed "s|$|,1|" probes_1.csv > probes_1_temp.csv
 
