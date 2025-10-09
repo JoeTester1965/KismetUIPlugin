@@ -44,8 +44,8 @@ probe_df = probe_df.sort_index()
 title = "Probed SSIDs in a hex format"
 
 graph = ggplot(probe_df, aes(y = 'timestamp', x = 'ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
-        ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
-        scale_y_datetime(date_breaks = "1 hour", labels = date_format("%H")) + \
+        ylab("Hour:Minute") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
+        scale_y_datetime(date_breaks = "10 minutes", labels = date_format("%H%:%M")) + \
         theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 8)) + \
         ggtitle(title)
 
@@ -56,8 +56,8 @@ graph.save(filename = plot_filename, dpi = 600)
 title = "Probed SSIDs in a printable format"
 
 graph = ggplot(probe_df, aes(y = 'timestamp', x = 'printable_ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
-       ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
-        scale_y_datetime(date_breaks = "1 hour", labels = date_format("%H")) + \
+       ylab("Hour:Minute") + theme(axis_text_x=element_text(rotation=90, size=6)) + \
+        scale_y_datetime(date_breaks = "10 minutes", labels = date_format("%H:%M")) + \
         theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 8)) + \
         ggtitle(title)
 
