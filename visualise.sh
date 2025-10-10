@@ -40,4 +40,7 @@ cp -f probes.jpg $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
 cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
 cp -f probes_sorted.csv $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
 
+cat probes_sorted.csv >> $dir/probes_sorted.csv
+cat probes_sorted.csv >> $dir/$(date +%d-%m-%Y)/probes_sorted.csv
+
 exit
