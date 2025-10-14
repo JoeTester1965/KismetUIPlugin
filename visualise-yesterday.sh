@@ -23,10 +23,6 @@ directory=$dir/$(date -d "yesterday" +%d-%m-%Y)
 
 file=$directory/probes_sorted.csv
 
-echo $file
-
-echo $directory
-
 nohup python3 probe_viewer_sorted.py $file > probe_viewer.log 2>&1
 
 cp -f probes.jpg $directory
