@@ -1,5 +1,9 @@
 #!/bin/bash
 
+nohup bash ./stop.sh 2>/dev/null
+
+nohup ./restart_devices.sh 2>/dev/null
+
 VIRTUAL_ENV_IF_NEEDED=$PWD/venv/bin/activate
 
 #Use a python virtual env if needed
@@ -10,8 +14,6 @@ else
 fi
 
 CONFIG_FILE="process_real_time_probes.cfg"  
-
-nohup bash ./stop.sh &> /dev/null
 
 nohup python3 process_real_time_probes.py $CONFIG_FILE probes_0.csv 2>/dev/null &
 nohup python3 process_real_time_probes.py $CONFIG_FILE probes_1.csv 2>/dev/null &

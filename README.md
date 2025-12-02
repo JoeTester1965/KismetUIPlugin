@@ -57,8 +57,8 @@ By default this visualisation server runs on port 8050, change the line at the b
 
 ``` console
 channel_hop_speed=1/sec
-source=wlan0:channel_hop=true,channels="1,6,11"
-source=wlan1:channel_hop=true,channels="1,6,11"
+source=wlan0mon:channel_hop=true,channels="1,6,11"
+source=wlan1mon:channel_hop=true,channels="1,6,11"
 logging_enabled=false
 enable_logging=false
 log_prefix=/tmp
@@ -110,6 +110,21 @@ You can get MQTT alerts when a probe comes in based on what is in what is in [pr
 <img src="./example-probes.jpg">
 
 Put something like [this](crontab) in your crontab file to update visualisation images say every 24 hours but changing */home/pi/Documents/Share/wifi* to what works for you.
+
+# etc
+
+My wifi cards kept borking after a period of time. 
+
+My bodge is to reset USB devices every so often.
+
+If you do no need do not use this.
+
+Edit [this](restart_devices.sh) if needed for you to match your device. Then:
+
+``` console
+chmod u+x restart_devices.sh
+sudo chmod u+s restart_devices.sh
+```
 
 Enjoy
 
