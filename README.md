@@ -126,6 +126,12 @@ chmod u+x restart_devices.sh
 sudo chmod u+s restart_devices.sh
 ```
 
+Also make sure your sirelesee interfaces are disabled on startup say by putting this in root crontab
+
+```
+@reboot /usr/bin/sleep 30;ip link set wlan0 down; ip link set wlan1 down
+```
+
 Enjoy
 
 
