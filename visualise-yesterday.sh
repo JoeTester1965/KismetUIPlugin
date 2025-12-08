@@ -21,9 +21,9 @@ TIME_INTERVAL="24h"
 
 directory=$dir/$(date -d "yesterday" +%d-%m-%Y)
 
-file=$directory/probes_sorted.csv
+file=$directory/probes.csv
 
-nohup python3 probe_viewer_sorted.py $file > probe_viewer.log 2>&1
+nohup python3 probe_viewer.py $file > probe_viewer_yesterday.log 2>&1
 
 cp -f probes.jpg $directory
 cp -f probes-raw.jpg $directory

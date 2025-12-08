@@ -17,27 +17,21 @@ else
 	dir=$1
 fi
 
-if [[ -z $2 ]]
-then
-	TIME_INTERVAL="24h"
-else
-	TIME_INTERVAL=$2
-fi
-
 cp -f process_real_time_probes.cfg $dir
 
-cat probes_0_temp.csv > probes.csv
-
-nohup python3 probe_viewer.py probes.csv $TIME_INTERVAL > probe_viewer.log 2>&1
+nohup python3 probe_viewer.py probes.csv > probe_viewer.log 2>&1
 
 mkdir -p $dir/$(date +%d-%m-%Y)
 mkdir -p $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
 
 cp -f probes.jpg $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
 cp -f probes-raw.jpg $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
-cp -f probes_sorted.csv $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
+cp -f probes.csv $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
+cp -f probes_printable.csv $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
 
-cat probes_sorted.csv >> $dir/probes_sorted.csv
-cat probes_sorted.csv >> $dir/$(date +%d-%m-%Y)/probes_sorted.csv
+cat probes.csv >> $dir/probes.csv
+cat probes.csv >> $dir/$(date +%d-%m-%Y)/probes.csv
+cat probes_printable.csv >> $dir/probes_printable.csv
+cat probes_printable.csv >> $dir/$(date +%d-%m-%Y)/probes_printable.csv
 
 exit
