@@ -26,10 +26,7 @@ fi
 
 cp -f process_real_time_probes.cfg $dir
 
-sed "s|$|,0|" probes_0.csv > probes_0_temp.csv
-sed "s|$|,1|" probes_1.csv > probes_1_temp.csv
-
-cat probes_0_temp.csv probes_1_temp.csv > probes.csv
+cat probes_0_temp.csv > probes.csv
 
 nohup python3 probe_viewer.py probes.csv $TIME_INTERVAL > probe_viewer.log 2>&1
 

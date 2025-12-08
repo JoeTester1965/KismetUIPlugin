@@ -1,12 +1,10 @@
 import sys
 import logging
-import datetime
 import logging
 import pandas as pd
 from plotnine import *
 from mizani.formatters import date_format
 import os
-import string
 
 def filter_non_printable(str):
   return ''.join([c for c in str if ord(c) > 31 or ord(c) == 9])
@@ -38,17 +36,17 @@ probe_df = probe_df.sort_index()
 # ToDo | colour based on collector
 #
 
-title = "Probed SSIDs in a hex format"
+#title = "Probed SSIDs in a hex format"
 
-graph = ggplot(probe_df, aes(y = 'timestamp', x = 'raw_ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
-        ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=4)) + \
-        scale_y_datetime(date_breaks = "1 hour", labels = date_format("%H")) + \
-        theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 8)) + \
-        ggtitle(title)
+#graph = ggplot(probe_df, aes(y = 'timestamp', x = 'raw_ssid')) + geom_point(aes(size='signal_dbm'), alpha=0.2) + \
+#        ylab("Hour") + theme(axis_text_x=element_text(rotation=90, size=4)) + \
+#        scale_y_datetime(date_breaks = "1 hour", labels = date_format("%H")) + \
+#        theme(axis_text_y=element_text(size=6)) + theme(figure_size=(16, 8)) + \
+#        ggtitle(title)
 
-plot_filename = os.getcwd() + '/probes-raw.jpg'
-logging.info("Saving %s", plot_filename)
-graph.save(filename = plot_filename, dpi = 600)
+#plot_filename = os.getcwd() + '/probes-raw.jpg'
+#logging.info("Saving %s", plot_filename)
+#graph.save(filename = plot_filename, dpi = 600)
 
 title = "Probed SSIDs in a printable format"
 
