@@ -17,6 +17,10 @@ else
 	dir=$1
 fi
 
+rm -f probes.jpg 2>&1
+rm -f probes-raw.jpg 2>&1
+rm -f probes_printable.csv2>&1
+
 cp -f process_real_time_probes.cfg $dir
 
 nohup python3 probe_viewer.py probes.csv > probe_viewer.log 2>&1

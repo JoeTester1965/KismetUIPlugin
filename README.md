@@ -119,11 +119,11 @@ My bodge is to reset USB devices every so often.
 
 If you do no need do not use this.
 
-Edit [this](restart_devices.sh) if needed for you to match your device. Then:
+Edit [this](activate_monitoring.sh) if needed for you to match your device. Then:
 
 ``` console
-chmod u+x restart_devices.sh
-sudo chmod u+s restart_devices.sh
+chmod u+x activate_monitoring.sh
+sudo chmod u+s activate_monitoring.sh
 ```
 
 Also make sure your sirelesee interfaces are disabled on startup say by putting this in root crontab
