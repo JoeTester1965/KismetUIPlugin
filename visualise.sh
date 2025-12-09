@@ -30,8 +30,6 @@ cp -f probes.csv $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
 cp -f probes_printable.csv $dir/$(date +%d-%m-%Y)/$(date +%H-%M)
 
 cat probes.csv >> $dir/probes.csv
-cat probes.csv >> $dir/$(date +%d-%m-%Y)/probes.csv
 cat probes_printable.csv >> $dir/probes_printable.csv
-cat probes_printable.csv >> $dir/$(date +%d-%m-%Y)/probes_printable.csv
 
 exit

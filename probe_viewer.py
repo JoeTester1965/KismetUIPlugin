@@ -64,7 +64,7 @@ logging.info("Saving %s", plot_filename)
 graph.save(filename = plot_filename, dpi = 600)
 
 map_filename = os.getcwd() + '/probes_printable.csv'
-probes_printable = probe_df[['printable_ssid', 'ssid', 'channel','signal_dbm']]
+probes_printable = probe_df[['printable_ssid', 'channel','signal_dbm']]
 probes_printable.to_csv(map_filename, header=False)
 
 
