@@ -2,7 +2,9 @@
 
 nohup bash ./stop.sh 2>/dev/null
 
-nohup ./activate_monitoring.sh 2>/dev/null &
+nohup ./activate_monitoring.sh 2>/dev/null
+
+nohup ./activate_hopping.sh 2>/dev/null &
 
 sleep 5
 
