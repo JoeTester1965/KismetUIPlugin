@@ -30,7 +30,11 @@ chmod u+x start.sh
 
 chmod u+x stop.sh
 
-chmod u+x restart_tshark.sh
+chmod u+x visualise.sh
+
+chmod u+x activate_hopping.sh
+
+chmod u+x activate_monitoring.sh
 
 sudo apt-get install python3-pandas python3-pandas-lib libopenblas-dev tshark
 
@@ -126,7 +130,7 @@ chmod u+x activate_monitoring.sh
 sudo chmod u+s activate_monitoring.sh
 ```
 
-Also make sure your sirelesee interfaces are disabled on startup say by putting this in root crontab
+Also make sure your wireless interfaces are disabled on startup say by putting this in root crontab
 
 ```
 @reboot /usr/bin/sleep 30;ip link set wlan0 down; ip link set wlan1 down
