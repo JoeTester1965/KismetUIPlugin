@@ -1,1 +1,1 @@
-@reboot sleep 300 ; cd /home/pi/Documents/KismetUIPlugin ; ./visualise.sh /home/pi/Documents/Share/wifi ; ./start.sh
+@reboot sleep 300 ; cd /home/pi/Documents/KismetUIPlugin ; ./visualise.sh /home/pi/Documents/Share/wifi ; rm probes.csv ; ./start.sh
