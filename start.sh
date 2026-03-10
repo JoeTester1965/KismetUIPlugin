@@ -19,7 +19,7 @@ fi
 
 CONFIG_FILE="process_real_time_probes.cfg"  
 
-nohup python3 process_real_time_probes.py $CONFIG_FILE probes.csv 2>/dev/null &
+nohup python3 process_real_time_probes.py $CONFIG_FILE probes.csv &>process_real_time_probes.log &
 
 #nohup kismet &> kismet.log & 
 #nohup python3 KismetUIPlugin.py &>KismetUIPlugin.log &
