@@ -139,6 +139,8 @@ You can interact with the menu as follows:
 
 You can get MQTT alerts when a probe comes in based on what is in what is in [process_real_time_probes.example.cfg](process_real_time_probes.example.cfg).
 
+This example file must be renamed from **process_real_time_probes.example.cfg** to **process_real_time_probes.cfg**
+
 # Automated periodic probed ssid visualisation 
 
 <img src="./example-probes.jpg">
