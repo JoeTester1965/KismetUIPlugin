@@ -51,7 +51,7 @@ pip3 install -r requirements.txt
 deactivate
 ```
 
-Edit [this](activate_monitoring.sh) if needed for you to match your device. Then:
+Edit [this](activate_monitoring.sh) to match your device. Then:
 
 ``` console
 chmod u+x activate_monitoring.sh
