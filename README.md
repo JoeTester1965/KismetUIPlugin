@@ -36,7 +36,7 @@ chmod u+x activate_hopping.sh
 
 chmod u+x activate_monitoring.sh
 
-sudo apt-get install python3-pandas python3-pandas-lib libopenblas-dev tshark
+sudo apt-get install python3-pandas python3-pandas-lib libopenblas-dev tshark aircrack-ng
 
 sudo usermod -aG kismet your-user-here
 
