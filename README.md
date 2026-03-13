@@ -51,6 +51,19 @@ pip3 install -r requirements.txt
 deactivate
 ```
 
+Edit [this](activate_monitoring.sh) if needed for you to match your device. Then:
+
+``` console
+chmod u+x activate_monitoring.sh
+sudo chmod u+s activate_monitoring.sh
+```
+
+Also make sure your wireless interfaces are disabled on startup say by putting this in root crontab
+
+```
+@reboot /usr/bin/sleep 30;ip link set wlan0 down; ip link set wlan1 down
+```
+
 Then you must **reboot** to allow the user group changes to take effect.
 
 By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
