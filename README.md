@@ -73,6 +73,23 @@ kis_log_packet_timeout=86400
 kis_log_snapshot_timeout=86400
 ```
 
+Edit [this](activate_monitoring.sh) if needed for you to match your device. Then:
+
+``` console
+chmod u+x activate_monitoring.sh
+```
+
+and if needed by your system (-:
+
+``` console
+sudo chmod u+s activate_monitoring.sh
+```
+
+Also make sure your wireless interfaces are disabled on startup say by putting this in root crontab
+
+```
+@reboot /usr/bin/sleep 30;ip link set wlan0 down; ip link set wlan1 down
+```
 
 **Important:** Then edit the bottom line of and [start.sh](start.sh) to capture probes if needed on your prmoiscous wlan interface/s. Default is *wlan0mon*.
 
@@ -114,27 +131,6 @@ You can get MQTT alerts when a probe comes in based on what is in what is in [pr
 <img src="./example-probes.jpg">
 
 Put something like [this](crontab) in your crontab file to update visualisation images say every 24 hours but changing */home/pi/Documents/Share/wifi* to what works for you.
-
-# etc
-
-My wifi cards kept borking after a period of time. 
-
-My bodge is to reset USB devices every so often.
-
-If you do no need do not use this.
-
-Edit [this](activate_monitoring.sh) if needed for you to match your device. Then:
-
-``` console
-chmod u+x activate_monitoring.sh
-sudo chmod u+s activate_monitoring.sh
-```
-
-Also make sure your wireless interfaces are disabled on startup say by putting this in root crontab
-
-```
-@reboot /usr/bin/sleep 30;ip link set wlan0 down; ip link set wlan1 down
-```
 
 Enjoy
 
