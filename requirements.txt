@@ -6,3 +6,5 @@ visdcc
 QtPy
 plotnine
 paho-mqtt
+legacy-cgi
+

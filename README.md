@@ -58,24 +58,17 @@ chmod u+x activate_monitoring.sh
 sudo chmod u+s activate_monitoring.sh
 ```
 
-Also make sure your wireless interfaces are disabled on startup say by putting this in root crontab
+Make sure your wireless interfaces are disabled on startup if needed by putting this in root crontab
 
 ```
 @reboot /usr/bin/sleep 30;ip link set wlan0 down; ip link set wlan1 down
 ```
 
-Then you must **reboot** to allow the user group changes to take effect.
-
-By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
-
-# Using
-
-**Important:** Created and/or edit /etc/kismet/kismet_site.conf to meet your interface needs e.g.
+Create and/or edit /etc/kismet/kismet_site.conf to meet your interface needs. Note am using [this](activate_monitoring.sh) and [that](activate_hopping.sh) for capture device, not kismet, as it got flaky for me.
 
 ``` console
 channel_hop_speed=1/sec
-source=wlan0mon:channel_hop=true,channels="1,6,11"
-source=wlan1mon:channel_hop=true,channels="1,6,11"
+source=wlan0mon
 logging_enabled=false
 enable_logging=false
 log_prefix=/tmp
@@ -86,27 +79,9 @@ kis_log_packet_timeout=86400
 kis_log_snapshot_timeout=86400
 ```
 
-Edit [this](activate_monitoring.sh) if needed for you to match your device. Then:
+Then you must **reboot** to allow the user group changes to take effect.
 
-``` console
-chmod u+x activate_monitoring.sh
-```
-
-and if needed by your system (-:
-
-``` console
-sudo chmod u+s activate_monitoring.sh
-```
-
-Also make sure your wireless interfaces are disabled on startup say by putting this in root crontab
-
-```
-@reboot /usr/bin/sleep 30;ip link set wlan0 down; ip link set wlan1 down
-```
-
-**Important:** Then edit the bottom line of and [start.sh](start.sh) to capture probes if needed on your prmoiscous wlan interface/s. Default is *wlan0mon*.
-
-Then:
+# Using
 
 ``` console
 ./start.sh
@@ -114,6 +89,8 @@ Then:
 ```
 
 # User interface
+
+By default this visualisation server runs on port 8050, change the line at the bottom of the [python code](./KismetUIPlugin.py) if needed.
 
 You can interact with the graph (important as information may be hiding off the screen) as follows:
 
@@ -145,7 +122,18 @@ This example file must be renamed from **process_real_time_probes.example.cfg** 
 
 <img src="./example-probes.jpg">
 
-Put something like [this](crontab) in your crontab file to update visualisation images say every 24 hours but changing */home/pi/Documents/Share/wifi* to what works for you.
+Put something in your crontab file to update visualisation images say every 24 hours but changing **/home/pi/Documents/Share/wifi** to what works for you. I fond doing this on a daily reboot makes it more stable.
+
+```
+#crontab -l
+@reboot /usr/bin/sleep 60 && cd /home/kali/KismetUIPlugin && ./visualise.sh /home/kali/share/wifi && rm probes.csv && ./start.sh
+```
+
+```
+sudo sh
+#crontab -l
+30 4 * * * /usr/sbin/reboot
+```
 
 Enjoy
 
