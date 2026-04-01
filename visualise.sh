@@ -12,7 +12,8 @@ fi
 
 if [[ -z $1 ]]
 then
-	dir=.
+	echo "Need path to ouput directory"
+    exit
 else
 	dir=$1
 fi
