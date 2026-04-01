@@ -67,7 +67,8 @@ Make sure your wireless interfaces are disabled on startup if needed by putting 
 Create and/or edit /etc/kismet/kismet_site.conf to meet your interface needs. Note am using [this](activate_monitoring.sh) and [that](activate_hopping.sh) for capture device, not kismet, as it got flaky for me.
 
 ``` console
-source=wlan0mon,hop=false
+source=wlan0mon
+channel_hop=false
 logging_enabled=false
 enable_logging=false
 log_prefix=/tmp
