@@ -112,13 +112,41 @@ You can interact with the menu as follows:
 ```Refresh``` | Refresh the graph based on what you have
 ```Reset``` | Reset the graph back to defaults
 
-# Real time Probe alerts
+# Optional - Disable newtworkmanager on Linux for more reliable wifi capture
+
+Example /etc/network/interfaces file needed for below:
+
+```
+auto eth0
+iface eth0 inet static
+    address 192.168.1.78
+    netmask 255.255.255.0
+    gateway 192.168.1.1
+    dns-nameservers 192.168.1.50 192.168.1.1
+```
+
+Run these commands:
+
+```
+sudo systemctl stop NetworkManager
+sudo systemctl disable NetworkManager
+sudo systemctl mask NetworkManager
+
+sudo nano /etc/network/interfaces
+sudo apt install ifupdown
+sudo systemctl enable --now networking
+
+sudo service networking stop
+sudo service networking start
+```
+
+# Optional  - Real time Probe alerts
 
 You can get MQTT alerts when a probe comes in based on what is in what is in [process_real_time_probes.example.cfg](process_real_time_probes.example.cfg).
 
 This example file must be renamed from **process_real_time_probes.example.cfg** to **process_real_time_probes.cfg**
 
-# Automated periodic probed ssid visualisation 
+# Optional - Automated periodic probed ssid visualisation 
 
 <img src="./example-probes.jpg">
 
