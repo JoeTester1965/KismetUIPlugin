@@ -4,4 +4,5 @@ sudo airmon-ng stop wlan0mon  2>/dev/null
 #sudo usbreset 001/004
 sudo airmon-ng check kill 2>/dev/null
 sudo rfkill unblock 0
+iw reg set GB
 sudo airmon-ng start wlan0 2>/dev/null
